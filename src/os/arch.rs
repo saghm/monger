@@ -1,6 +1,7 @@
 #[derive(Clone, Copy, Debug)]
 pub enum Architecture {
     Arm,
+    #[allow(non_camel_case_types)]
     X86_64,
 }
 

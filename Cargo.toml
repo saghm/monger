@@ -6,4 +6,6 @@ name = "monger"
 version = "0.0.0"
 
 [dependencies]
+error-chain = "0.10.0"
+reqwest = "0.7.1"
 semver = "0.7.0"

@@ -4,3 +4,6 @@ description = "MongoDB version manager"
 license = "Apache-2.0"
 name = "monger"
 version = "0.0.0"
+
+[dependencies]
+semver = "0.7.0"

@@ -1,0 +1,23 @@
+[root]
+name = "monger"
+version = "0.0.0"
+dependencies = [
+ "semver 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "semver"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "semver-parser"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[metadata]
+"checksum semver 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3fdd61b85a0fa777f7fb7c454b9189b2941b110d1385ce84d7f76efdf1606a85"
+"checksum semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"

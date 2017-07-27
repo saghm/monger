@@ -1,21 +1,41 @@
 mod arch;
+#[allow(dead_code)]
 mod macos;
 mod linux;
+#[allow(dead_code)]
 mod windows;
+
+use std::env::consts;
 
 use semver::Version;
 
-use self::macos::MacOsType;
-use self::linux::LinuxType;
-use self::windows::WindowsType;
-use super::url::UrlBuilder;
-use super::util::FileExtension;
+use error::{ErrorKind, Result};
+pub use self::macos::MacOsType;
+pub use self::linux::LinuxType;
+pub use self::windows::WindowsType;
+use super::url::{Url, UrlBuilder};
+use util::FileExtension;
 
 #[derive(Debug)]
-enum OperatingSystem {
+pub enum OperatingSystem {
     Linux(LinuxType),
+
+    #[allow(dead_code)]
     MacOs(MacOsType),
+
+    #[allow(dead_code)]
     Windows(WindowsType),
+}
+
+impl OperatingSystem {
+    pub fn get() -> Result<Self> {
+        match consts::OS {
+            "linux" => LinuxType::get().map(OperatingSystem::Linux),
+            "macos" => bail!(ErrorKind::UnsupportedOs("macos".to_string())),
+            "windows" => bail!(ErrorKind::UnsupportedOs("windows".to_string())),
+            s => bail!(ErrorKind::UnsupportedOs(s.to_string())),
+        }
+    }
 }
 
 impl OperatingSystem {
@@ -35,7 +55,7 @@ impl OperatingSystem {
         }
     }
 
-    pub fn download_url(&self, version: &Version) -> String {
+    pub fn download_url(&self, version: &Version) -> Url {
         let mut builder = UrlBuilder::new(self.name(), self.extension().name());
 
         builder.add_distro_path_item("mongodb".to_string());
@@ -67,8 +87,9 @@ mod tests {
 
     fn matches_url(url: &str, os: OperatingSystem) {
         let version = Version::parse("3.4.6").unwrap();
+        let download_url: String = os.download_url(&version).into();
 
-        assert_eq!(url, os.download_url(&version));
+        assert_eq!(url, download_url);
     }
 
     //

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 pub enum FileExtension {
     Msi,
     Tgz,
@@ -10,4 +12,19 @@ impl FileExtension {
             FileExtension::Tgz => "tgz",
         }
     }
+}
+
+#[macro_export]
+macro_rules! try_option {
+    ($opt:expr) => {
+        match $opt {
+            Some(val) => val,
+            None => return None
+        }
+    };
+}
+
+#[inline]
+pub fn get_from_str<T: FromStr>(s: &str) -> Option<T> {
+    FromStr::from_str(s).ok()
 }

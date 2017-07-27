@@ -1,3 +1,22 @@
+#[derive(Debug)]
+pub struct Url {
+    base: String,
+    filename: String,
+}
+
+impl Url {
+    pub fn filename(&self) -> String {
+        self.filename.clone()
+    }
+}
+
+impl From<Url> for String {
+    fn from(url: Url) -> Self {
+        format!("{}/{}", url.base, url.filename)
+    }
+}
+
+#[derive(Debug)]
 pub struct UrlBuilder {
     os: String,
     distro: Vec<String>,
@@ -20,19 +39,22 @@ impl UrlBuilder {
         self.distro.push(item)
     }
 
-    pub fn build(self) -> String {
-        let mut url = format!("{}://{}/{}/", SCHEME, DOMAIN, self.os);
+    pub fn build(self) -> Url {
+        let base = format!("{}://{}/{}", SCHEME, DOMAIN, self.os);
 
-        for (i, item) in self.distro.into_iter().enumerate() {
+        let mut filename = String::new();
+
+        for (i, item) in self.distro.iter().enumerate() {
             if i != 0 {
-                url.push_str("-");
+                filename.push_str("-");
             }
 
-            url.push_str(&item);
+            filename.push_str(&item);
         }
 
-        url.push_str(".");
-        url.push_str(&self.extension);
-        url
+        filename.push_str(".");
+        filename.push_str(&self.extension);
+
+        Url { base, filename }
     }
 }

@@ -17,6 +17,7 @@ impl HttpClient {
         let mut data = Vec::new();
         let mut response = self.client.get(url)?.send()?;
         response.read_to_end(&mut data)?;
+
         Ok(data)
     }
 }

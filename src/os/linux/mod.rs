@@ -1,8 +1,22 @@
+mod amazon;
+mod debian;
+mod rhel;
+mod suse;
+mod ubuntu;
+
+use rs_release::get_os_release;
 use semver::Version;
 
+use error::{ErrorKind, Result};
+use self::amazon::check_amazon;
+use self::debian::check_debian;
+use self::rhel::check_rhel;
+use self::suse::check_suse;
+use self::ubuntu::check_ubuntu;
 use super::arch::Architecture;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum LinuxType {
     Amazon,
     Debian7,
@@ -18,6 +32,27 @@ pub enum LinuxType {
 }
 
 impl LinuxType {
+    pub fn get() -> Result<LinuxType> {
+        let info = get_os_release()?;
+        let id_entry = info.get("ID").map(|s| &s[..]);
+
+        let id = match id_entry {
+            Some(id) => id,
+            None => bail!(ErrorKind::UnknownOs),
+        };
+
+        let version_id = info.get("VERSION_ID").map(|s| &s[..]);
+
+        Ok(
+            check_ubuntu(id, version_id)
+                .or(check_amazon(id))
+                .or(check_rhel(id, version_id))
+                .or(check_suse(id, version_id))
+                .or(check_debian(id, version_id))
+                .unwrap_or(LinuxType::Legacy),
+        )
+    }
+
     fn architecture(&self) -> Architecture {
         if let LinuxType::Ubuntu1604(arch) = *self {
             return arch;

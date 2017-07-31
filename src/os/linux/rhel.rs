@@ -2,7 +2,7 @@ use super::LinuxType;
 use util::get_from_str;
 
 pub fn check_rhel(id: &str, version_id: Option<&str>) -> Option<LinuxType> {
-    if id == "rhel" {
+    if id == "rhel" || id == "centos" {
         return check_rhel_version(version_id);
     }
 

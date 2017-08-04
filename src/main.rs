@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate error_chain;
+
 extern crate reqwest;
 extern crate rs_release;
 extern crate semver;
@@ -7,35 +8,38 @@ extern crate semver;
 #[macro_use]
 mod util;
 
-//mod client;
+mod client;
 mod error;
-//mod file;
+mod fs;
 mod os;
+mod process;
 mod url;
 
 use semver::Version;
 
-// use client::HttpClient;
+use client::HttpClient;
 use error::Result;
-//use file::write_file;
+use fs::Fs;
 use os::OperatingSystem;
 
-fn run() -> Result<()> {
+quick_main!(run);
+
+fn run() -> Result<i32> {
     let version = Version::parse("3.4.6")?;
     let url = OperatingSystem::get()?.download_url(&version);
-    //    let client = HttpClient::new()?;
-    //    let file = url.filename();
+    let client = HttpClient::new()?;
+    let file = url.filename();
     let url: String = url.into();
 
     println!("downloading {}...", url);
-    //    let data = client.download_file(&url)?;
-    //
-    //    println!("writing {}...", file);
-    //    write_file(&file, &data[..])?;
+    let data = client.download_file(&url)?;
 
-    Ok(())
-}
+    println!("writing {}...", file);
+    let fs = Fs::default()?;
+    fs.write_file(&file, &data[..])?;
 
-fn main() {
-    run().unwrap()
+    println!("decompressing {}...", file);
+    fs.decompress(&file)?;
+
+    Ok(0)
 }

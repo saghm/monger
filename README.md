@@ -1,3 +1,5 @@
+[![crates.io](https://img.shields.io/crates/v/monger.svg)](https://crates.io/crates/monger)
+
 # monger - MongoDB Version Manager
 
 # Installation

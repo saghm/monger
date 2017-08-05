@@ -14,6 +14,7 @@ impl HttpClient {
     }
 
     pub fn download_file(&self, url: &str) -> Result<Vec<u8>> {
+        println!("downloading {}...", url);
         let mut data = Vec::new();
         let mut response = self.client.get(url)?.send()?;
         response.read_to_end(&mut data)?;

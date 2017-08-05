@@ -11,30 +11,20 @@ mod util;
 mod client;
 mod error;
 mod fs;
+mod monger;
 mod os;
 mod process;
 mod url;
 
-use semver::Version;
-
-use client::HttpClient;
 use error::Result;
-use fs::Fs;
-use os::OperatingSystem;
+use monger::Monger;
 
 quick_main!(run);
 
 fn run() -> Result<i32> {
-    let version = Version::parse("3.4.6")?;
-    let url = OperatingSystem::get()?.download_url(&version);
-    let client = HttpClient::new()?;
-    let file = url.filename();
-    let url: String = url.into();
-
-    println!("downloading {}...", url);
-    let data = client.download_file(&url)?;
-    let fs = Fs::new().build()?;
-    fs.write_mongodb_download(&file, &data[..])?;
+    let monger = Monger::new()?;
+    monger.download_mongodb_version("3.4.6")?;
+    monger.download_mongodb_version("3.2.16")?;
 
     Ok(0)
 }

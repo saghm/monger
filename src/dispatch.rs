@@ -12,6 +12,7 @@ pub fn dispatch(args: ArgMatches) -> Result<()> {
         ("list", _) => list(&monger),
         ("get", Some(m)) => get(&monger, m),
         ("run", Some(m)) => run(&monger, m),
+        ("start", Some(m)) => start(&monger, m),
         _ => invariant!("subcommand must be provided with requisite args"),
     }
 }
@@ -38,7 +39,9 @@ fn list(monger: &Monger) -> Result<()> {
     let mut versions: Vec<_> = monger
         .list_versions()?
         .into_iter()
-        .map(|s| Version::parse(s.to_string_lossy().as_ref()).map_err(From::from))
+        .map(|s| {
+            Version::parse(s.to_string_lossy().as_ref()).map_err(From::from)
+        })
         .collect::<Result<_>>()?;
     versions.sort();
 
@@ -63,4 +66,14 @@ fn run(monger: &Monger, matches: &ArgMatches) -> Result<()> {
     let args = matches.values_of("BIN_ARGS").unwrap_or_default();
 
     monger.exec(bin, args, &version)
+}
+
+fn start(monger: &Monger, matches: &ArgMatches) -> Result<()> {
+    let version = matches.value_of("VERSION").unwrap_or_else(|| {
+        invariant!("`monger run` must provide version")
+    });
+
+    let args = matches.values_of("MONGOD_ARGS").unwrap_or_default();
+
+    monger.start_mongod(args.map(Into::into), version)
 }

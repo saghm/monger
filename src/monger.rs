@@ -31,7 +31,11 @@ impl Monger {
         let file = url.filename();
         let url: String = url.into();
         let data = self.client.download_file(&url)?;
-        self.fs.write_mongodb_download(&file, &data[..], version_str)?;
+        self.fs.write_mongodb_download(
+            &file,
+            &data[..],
+            version_str,
+        )?;
 
         Ok(())
     }
@@ -41,7 +45,19 @@ impl Monger {
     }
 
     pub fn list_versions(&self) -> Result<Vec<OsString>> {
-       self.fs.list_versions()
+        self.fs.list_versions()
+    }
+
+    pub fn start_mongod<I>(&self, args: I, version: &str) -> Result<()>
+    where
+        I: Iterator<Item = OsString>,
+    {
+        let db_dir = self.fs.create_or_get_db_dir(version)?;
+        self.exec(
+            "mongod",
+            args.chain(vec!["--dbpath".into(), db_dir.into_os_string()]),
+            version,
+        )
     }
 
     pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>

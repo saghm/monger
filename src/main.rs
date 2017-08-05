@@ -82,6 +82,21 @@ fn run() -> Result<i32> {
                         .last(true),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("start")
+                .about("start an installed mongod")
+                .arg(
+                    Arg::with_name("VERSION")
+                        .help("the mongod version to start")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("MONGOD_ARGS")
+                        .help("extra arguments for the mongod being run")
+                        .multiple(true)
+                        .last(true),
+                ),
+        )
         .get_matches();
 
     dispatch(matches)?;

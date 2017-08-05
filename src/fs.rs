@@ -44,6 +44,12 @@ impl Fs {
     }
 
     #[inline]
+    fn get_db_file_rel<P: AsRef<Path>>(&self, filename: P) -> PathBuf {
+        self.db_dir.join(filename)
+    }
+
+
+    #[inline]
     fn get_version_dir(&self, version: &str) -> PathBuf {
         self.get_bin_file_abs(version)
     }
@@ -110,6 +116,11 @@ impl Fs {
         self.get_version_dir(version).is_dir()
     }
 
+    pub fn create_or_get_db_dir(&self, version: &str) -> Result<PathBuf> {
+        let db_dir = self.get_file(self.get_db_file_rel(version));
+        create_dir_all(db_dir.as_path())?;
+        Ok(db_dir)
+    }
 
     pub fn delete_mongodb_version(&self, version: &str) -> Result<()> {
         self.delete_directory(self.get_version_dir(version))
@@ -121,7 +132,7 @@ impl Fs {
         bytes: &[u8],
         version: &str,
     ) -> Result<()> {
-       let bin_file = self.get_bin_file_rel(filename);
+        let bin_file = self.get_bin_file_rel(filename);
 
         println!("writing {}...", bin_file.display());
         self.write_file(&bin_file, bytes)?;

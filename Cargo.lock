@@ -1,6 +1,6 @@
 [root]
 name = "monger"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "clap 2.26.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",

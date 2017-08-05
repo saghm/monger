@@ -7,20 +7,32 @@ pub fn dispatch(args: ArgMatches) -> Result<()> {
     let monger = Monger::new()?;
 
     match args.subcommand() {
-        ("get", Some(m)) => get(monger, m),
-        ("run", Some(m)) => run(monger, m),
+        ("delete", Some(m)) => delete(&monger, m),
+        ("get", Some(m)) => get(&monger, m),
+        ("run", Some(m)) => run(&monger, m),
         _ => invariant!("subcommand must be provided with requisite args"),
     }
 }
 
-fn get(monger: Monger, matches: &ArgMatches) -> Result<()> {
+fn delete(monger: &Monger, matches: &ArgMatches) -> Result<()> {
+    match matches.value_of("VERSION") {
+        Some(version) => monger.delete_mongodb_version(version),
+        None => invariant!("`monger delete` must supply version"),
+    }
+}
+
+fn get(monger: &Monger, matches: &ArgMatches) -> Result<()> {
+    if matches.is_present("force") {
+        delete(monger, matches)?;
+    }
+
     match matches.value_of("VERSION") {
         Some(version) => monger.download_mongodb_version(version),
         None => invariant!("`monger get` must supply version"),
     }
 }
 
-fn run(monger: Monger, matches: &ArgMatches) -> Result<()> {
+fn run(monger: &Monger, matches: &ArgMatches) -> Result<()> {
     let version = matches.value_of("VERSION").unwrap_or_else(|| {
         invariant!("`monger run` must provide version")
     });

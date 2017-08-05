@@ -32,12 +32,29 @@ fn run() -> Result<i32> {
         .about(crate_description!())
         .setting(AppSettings::ArgRequiredElseHelp)
         .subcommand(
+            SubCommand::with_name("delete")
+                .help("deletes an installed MongoDB version")
+                .arg(
+                    Arg::with_name("VERSION")
+                        .help("the MongoDB version to delete")
+                        .required(true),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("get")
                 .help("downloads a MongoDB version")
                 .arg(
                     Arg::with_name("VERSION")
                         .help("the MongoDB version to download")
                         .required(true),
+                )
+                .arg(
+                    Arg::with_name("force")
+                        .help(
+                            "download the MongoDB version even if it already is installed",
+                        )
+                        .short("f")
+                        .long("force"),
                 ),
         )
         .subcommand(

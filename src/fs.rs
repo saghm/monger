@@ -1,10 +1,8 @@
 use std::env::home_dir;
-use std::fs::{create_dir_all, OpenOptions, remove_file, rename};
+use std::fs::{create_dir_all, OpenOptions, remove_dir_all, remove_file, rename};
 use std::io::Write;
 use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
-
-use semver::Version;
 
 use error::{ErrorKind, Result};
 use process::{exec_command, run_command};
@@ -85,6 +83,18 @@ impl Fs {
         Ok(())
     }
 
+    fn delete_directory<P: AsRef<Path>>(&self, dirname: P) -> Result<()> {
+        let path = self.home_dir.join(dirname);
+
+        if !path.exists() {
+            return Ok(());
+        }
+
+        remove_dir_all(path)?;
+
+        Ok(())
+    }
+
     fn write_file<P: AsRef<Path>>(&self, filename: P, bytes: &[u8]) -> Result<()> {
         self.create()?;
 
@@ -95,19 +105,29 @@ impl Fs {
         Ok(())
     }
 
+    #[inline]
+    pub fn version_exists(&self, version: &str) -> bool {
+        self.get_version_dir(version).is_dir()
+    }
+
+
+    pub fn delete_mongodb_version(&self, version: &str) -> Result<()> {
+        self.delete_directory(self.get_version_dir(version))
+    }
+
     pub fn write_mongodb_download(
         &self,
         filename: &str,
         bytes: &[u8],
-        version: &Version,
+        version: &str,
     ) -> Result<()> {
-        let bin_file = self.get_bin_file_rel(filename);
+       let bin_file = self.get_bin_file_rel(filename);
 
         println!("writing {}...", bin_file.display());
         self.write_file(&bin_file, bytes)?;
 
         println!("decompressing...");
-        self.decompress_download(filename, &format!("{}", version))?;
+        self.decompress_download(filename, version)?;
 
         println!("cleaning up...");
         self.delete_file(&bin_file)?;

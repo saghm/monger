@@ -20,15 +20,24 @@ impl Monger {
         })
     }
 
-    pub fn download_mongodb_version(&self, version: &str) -> Result<()> {
-        let version = Version::parse(version)?;
+    pub fn download_mongodb_version(&self, version_str: &str) -> Result<()> {
+        if self.fs.version_exists(version_str) {
+            return Ok(());
+        }
+
+        let version = Version::parse(version_str)?;
+
         let url = OperatingSystem::get()?.download_url(&version);
         let file = url.filename();
         let url: String = url.into();
         let data = self.client.download_file(&url)?;
-        self.fs.write_mongodb_download(&file, &data[..], &version)?;
+        self.fs.write_mongodb_download(&file, &data[..], version_str)?;
 
         Ok(())
+    }
+
+    pub fn delete_mongodb_version(&self, version: &str) -> Result<()> {
+        self.fs.delete_mongodb_version(version)
     }
 
     pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>

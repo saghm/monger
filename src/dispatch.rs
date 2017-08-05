@@ -1,4 +1,5 @@
 use clap::ArgMatches;
+use semver::Version;
 
 use error::Result;
 use monger::Monger;
@@ -8,6 +9,7 @@ pub fn dispatch(args: ArgMatches) -> Result<()> {
 
     match args.subcommand() {
         ("delete", Some(m)) => delete(&monger, m),
+        ("list", _) => list(&monger),
         ("get", Some(m)) => get(&monger, m),
         ("run", Some(m)) => run(&monger, m),
         _ => invariant!("subcommand must be provided with requisite args"),
@@ -30,6 +32,23 @@ fn get(monger: &Monger, matches: &ArgMatches) -> Result<()> {
         Some(version) => monger.download_mongodb_version(version),
         None => invariant!("`monger get` must supply version"),
     }
+}
+
+fn list(monger: &Monger) -> Result<()> {
+    let mut versions: Vec<_> = monger
+        .list_versions()?
+        .into_iter()
+        .map(|s| Version::parse(s.to_string_lossy().as_ref()).map_err(From::from))
+        .collect::<Result<_>>()?;
+    versions.sort();
+
+    println!("installed versions:");
+
+    for version in versions {
+        println!("    {}", version);
+    }
+
+    Ok(())
 }
 
 fn run(monger: &Monger, matches: &ArgMatches) -> Result<()> {

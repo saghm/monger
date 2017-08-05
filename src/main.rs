@@ -57,6 +57,9 @@ fn run() -> Result<i32> {
                         .long("force"),
                 ),
         )
+        .subcommand(SubCommand::with_name("list").about(
+            "lists installed MongoDB versions",
+        ))
         .subcommand(
             SubCommand::with_name("run")
                 .about("run a binary of a downloaded MongoDB version")

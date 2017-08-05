@@ -1,4 +1,4 @@
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 
 use semver::Version;
 
@@ -38,6 +38,10 @@ impl Monger {
 
     pub fn delete_mongodb_version(&self, version: &str) -> Result<()> {
         self.fs.delete_mongodb_version(version)
+    }
+
+    pub fn list_versions(&self) -> Result<Vec<OsString>> {
+       self.fs.list_versions()
     }
 
     pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>

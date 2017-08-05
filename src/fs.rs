@@ -1,7 +1,7 @@
 use std::env::home_dir;
-use std::fs::{create_dir_all, OpenOptions, remove_dir_all, remove_file, rename};
+use std::fs::{create_dir_all, OpenOptions, read_dir, remove_dir_all, remove_file, rename};
 use std::io::Write;
-use std::ffi::OsStr;
+use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
 
 use error::{ErrorKind, Result};
@@ -135,6 +135,20 @@ impl Fs {
         Ok(())
     }
 
+    pub fn list_versions(&self) -> Result<Vec<OsString>> {
+        let mut versions = Vec::new();
+
+        for e in read_dir(self.get_bin_dir())? {
+            let entry = e?;
+
+            if entry.file_type()?.is_dir() {
+                versions.push(entry.file_name());
+            }
+        }
+
+        Ok(versions)
+    }
+
     pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>
     where
         I: IntoIterator<Item = S>,
@@ -152,16 +166,19 @@ pub struct FsBuilder {
 }
 
 impl FsBuilder {
+    #[allow(dead_code)]
     pub fn with_home_dir(&mut self, home_dir: &str) -> &mut Self {
         self.home_dir = Some(home_dir.into());
         self
     }
 
+    #[allow(dead_code)]
     pub fn with_bin_dir(&mut self, bin_dir: &str) -> &mut Self {
         self.bin_dir = Some(bin_dir.into());
         self
     }
 
+    #[allow(dead_code)]
     pub fn with_db_dir(&mut self, db_dir: &str) -> &mut Self {
         self.db_dir = Some(db_dir.into());
         self

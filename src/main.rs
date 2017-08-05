@@ -1,3 +1,4 @@
+#[macro_use]
 extern crate clap;
 #[macro_use]
 extern crate error_chain;
@@ -25,10 +26,10 @@ use error::Result;
 quick_main!(run);
 
 fn run() -> Result<i32> {
-    let matches = App::new("monger")
-        .version("0.0.0")
-        .author("Saghm Rossi <saghmrossi@gmail.com>")
-        .about("MongoDB version manager")
+    let matches = App::new(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!("\n"))
+        .about(crate_description!())
         .setting(AppSettings::ArgRequiredElseHelp)
         .subcommand(
             SubCommand::with_name("get")

@@ -28,3 +28,8 @@ macro_rules! try_option {
 pub fn get_from_str<T: FromStr>(s: &str) -> Option<T> {
     FromStr::from_str(s).ok()
 }
+
+#[macro_export]
+macro_rules! invariant {
+    ($msg:expr) => { panic!($msg) };
+}

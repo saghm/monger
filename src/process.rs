@@ -1,6 +1,7 @@
 use std::ffi::OsStr;
 use std::path::Path;
 use std::process::Command;
+use std::os::unix::process::CommandExt;
 
 use error::{ErrorKind, Result};
 
@@ -22,4 +23,13 @@ where
     );
 
     Ok(())
+}
+
+pub fn exec_command<I, S, P>(cmd: &str, args: I, dir: P) -> Result<()>
+where
+    I: IntoIterator<Item = S>,
+    S: AsRef<OsStr>,
+    P: AsRef<Path>,
+{
+    Err(Command::new(cmd).current_dir(dir).args(args).exec().into())
 }

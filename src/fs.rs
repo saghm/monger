@@ -1,12 +1,13 @@
 use std::env::home_dir;
 use std::fs::{create_dir_all, OpenOptions, remove_file, rename};
 use std::io::Write;
+use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 
 use semver::Version;
 
 use error::{ErrorKind, Result};
-use process::run_command;
+use process::{exec_command, run_command};
 
 const DEFAULT_HOME_DIR: &str = ".monger";
 const DEFAULT_BIN_DIR: &str = "mongodb-versions";
@@ -42,6 +43,11 @@ impl Fs {
     #[inline]
     fn get_bin_dir(&self) -> PathBuf {
         self.get_file(self.bin_dir.as_path())
+    }
+
+    #[inline]
+    fn get_version_dir(&self, version: &str) -> PathBuf {
+        self.get_bin_file_abs(version)
     }
 
     fn create(&self) -> Result<()> {
@@ -89,7 +95,12 @@ impl Fs {
         Ok(())
     }
 
-    pub fn write_mongodb_download(&self, filename: &str, bytes: &[u8], version: &Version) -> Result<()> {
+    pub fn write_mongodb_download(
+        &self,
+        filename: &str,
+        bytes: &[u8],
+        version: &Version,
+    ) -> Result<()> {
         let bin_file = self.get_bin_file_rel(filename);
 
         println!("writing {}...", bin_file.display());
@@ -102,6 +113,14 @@ impl Fs {
         self.delete_file(&bin_file)?;
 
         Ok(())
+    }
+
+    pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+    {
+        exec_command(binary_name, args, self.get_version_dir(version))
     }
 }
 

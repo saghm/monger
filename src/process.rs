@@ -16,8 +16,6 @@ where
         .spawn()?
         .wait()?;
 
-    println!("status: {}", status);
-
     ensure!(
         status.success(),
         ErrorKind::FailedSubprocess(cmd.to_string(), status.code())

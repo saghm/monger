@@ -33,13 +33,8 @@ fn run() -> Result<i32> {
 
     println!("downloading {}...", url);
     let data = client.download_file(&url)?;
-
-    println!("writing {}...", file);
-    let fs = Fs::default()?;
-    fs.write_file(&file, &data[..])?;
-
-    println!("decompressing {}...", file);
-    fs.decompress(&file)?;
+    let fs = Fs::new().build()?;
+    fs.write_mongodb_download(&file, &data[..])?;
 
     Ok(0)
 }

@@ -33,7 +33,7 @@ fn run() -> Result<i32> {
         .setting(AppSettings::ArgRequiredElseHelp)
         .subcommand(
             SubCommand::with_name("delete")
-                .help("deletes an installed MongoDB version")
+                .about("deletes an installed MongoDB version")
                 .arg(
                     Arg::with_name("VERSION")
                         .help("the MongoDB version to delete")
@@ -42,7 +42,7 @@ fn run() -> Result<i32> {
         )
         .subcommand(
             SubCommand::with_name("get")
-                .help("downloads a MongoDB version")
+                .about("downloads a MongoDB version")
                 .arg(
                     Arg::with_name("VERSION")
                         .help("the MongoDB version to download")
@@ -59,7 +59,7 @@ fn run() -> Result<i32> {
         )
         .subcommand(
             SubCommand::with_name("run")
-                .help("run a binary of a downloaded MongoDB version")
+                .about("run a binary of a downloaded MongoDB version")
                 .arg(
                     Arg::with_name("VERSION")
                         .help("the MongoDB version of the binary being run")

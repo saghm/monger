@@ -8,6 +8,16 @@ error_chain! {
     }
 
     errors {
+       BinaryNotFound(bin: String, version: String)  {
+            description("unable to find binary to run")
+            display("Unable to find `{}` version {}\n\nRun `monger get {}` and try again if you're \
+                    sure the version and binary name are correct",
+                    bin,
+                    version,
+                    version,
+            )
+        }
+
         FailedSubprocess(cmd: String, exit_code: Option<i32>) {
             description("a subprocess for monger has failed")
             display("{}: {}",

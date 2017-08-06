@@ -89,16 +89,16 @@ impl Fs {
         Ok(())
     }
 
-    fn delete_directory<P: AsRef<Path>>(&self, dirname: P) -> Result<()> {
+    fn delete_directory<P: AsRef<Path>>(&self, dirname: P) -> Result<bool> {
         let path = self.home_dir.join(dirname);
 
         if !path.exists() {
-            return Ok(());
+            return Ok(false);
         }
 
         remove_dir_all(path)?;
 
-        Ok(())
+        Ok(true)
     }
 
     fn write_file<P: AsRef<Path>>(&self, filename: P, bytes: &[u8]) -> Result<()> {
@@ -122,7 +122,7 @@ impl Fs {
         Ok(db_dir)
     }
 
-    pub fn delete_mongodb_version(&self, version: &str) -> Result<()> {
+    pub fn delete_mongodb_version(&self, version: &str) -> Result<bool> {
         self.delete_directory(self.get_version_dir(version))
     }
 

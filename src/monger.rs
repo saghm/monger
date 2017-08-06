@@ -1,9 +1,10 @@
 use std::ffi::{OsStr, OsString};
+use std::io::ErrorKind::NotFound;
 
 use semver::Version;
 
 use client::HttpClient;
-use error::Result;
+use error::{Error, ErrorKind, Result};
 use fs::Fs;
 use os::OperatingSystem;
 
@@ -41,7 +42,11 @@ impl Monger {
     }
 
     pub fn delete_mongodb_version(&self, version: &str) -> Result<()> {
-        self.fs.delete_mongodb_version(version)
+        if self.fs.delete_mongodb_version(version)? {
+            println!("Deleted version {}", version);
+        }
+
+        Ok(())
     }
 
     pub fn list_versions(&self) -> Result<Vec<OsString>> {
@@ -65,6 +70,14 @@ impl Monger {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        self.fs.exec(binary_name, args, version)
+        match self.fs.exec(binary_name, args, version) {
+            Err(Error(ErrorKind::Io(ref io_err), _)) if io_err.kind() == NotFound => {
+                bail!(ErrorKind::BinaryNotFound(
+                    binary_name.to_string(),
+                    version.to_string(),
+                ))
+            }
+            other => other,
+        }
     }
 }

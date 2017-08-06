@@ -23,9 +23,7 @@ use clap::{App, AppSettings, Arg, SubCommand};
 use dispatch::dispatch;
 use error::Result;
 
-quick_main!(run);
-
-fn run() -> Result<i32> {
+quick_main!(|| -> Result<i32> {
     let matches = App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!("\n"))
@@ -101,4 +99,4 @@ fn run() -> Result<i32> {
 
     dispatch(matches)?;
     Ok(0)
-}
+});

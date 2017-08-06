@@ -147,6 +147,8 @@ impl Fs {
     }
 
     pub fn list_versions(&self) -> Result<Vec<OsString>> {
+        self.create()?;
+
         let mut versions = Vec::new();
 
         for e in read_dir(self.get_bin_dir())? {

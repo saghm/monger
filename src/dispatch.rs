@@ -45,11 +45,18 @@ fn list(monger: &Monger) -> Result<()> {
         .collect::<Result<_>>()?;
     versions.sort();
 
-    println!("installed versions:");
+    print!("installed versions:");
 
-    for version in versions {
-        println!("    {}", version);
+    if versions.is_empty() {
+        println!(" none");
+    } else {
+        println!();
+
+        for version in versions {
+            println!("    {}", version);
+        }
     }
+
 
     Ok(())
 }

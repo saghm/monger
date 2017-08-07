@@ -31,5 +31,6 @@ where
     S: AsRef<OsStr>,
     P: AsRef<Path>,
 {
+    println!("running {}", dir.as_ref().join(cmd).display());
     Err(Command::new(cmd).current_dir(dir).args(args).exec().into())
 }

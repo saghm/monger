@@ -54,6 +54,12 @@ impl Fs {
         self.get_bin_file_abs(version)
     }
 
+    #[inline]
+    fn get_version_bin_dir<P: AsRef<Path>>(&self, version: P) -> PathBuf {
+        self.get_bin_file_abs(version.as_ref().join("bin"))
+    }
+
+
     fn create(&self) -> Result<()> {
         create_dir_all(self.get_file(self.bin_dir.as_path()).as_path())?;
         create_dir_all(self.get_file(self.db_dir.as_path()).as_path())?;
@@ -167,7 +173,7 @@ impl Fs {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        exec_command(binary_name, args, self.get_version_dir(version))
+        exec_command(&format!("./{}", binary_name), args, self.get_version_bin_dir(version))
     }
 }
 

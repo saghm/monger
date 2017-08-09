@@ -173,7 +173,11 @@ impl Fs {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        exec_command(&format!("./{}", binary_name), args, self.get_version_bin_dir(version))
+        exec_command(
+            &format!("./{}", binary_name),
+            args,
+            self.get_version_bin_dir(version),
+        )
     }
 }
 

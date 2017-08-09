@@ -33,3 +33,15 @@ pub fn get_from_str<T: FromStr>(s: &str) -> Option<T> {
 macro_rules! invariant {
     ($msg:expr) => { panic!($msg) };
 }
+
+macro_rules! version {
+    ($major:expr, $minor:expr, $patch:expr) => {{
+        ::semver::Version {
+            major: $major,
+            minor: $minor,
+            patch: $patch,
+            pre: Vec::new(),
+            build: Vec::new(),
+        }
+    }};
+}

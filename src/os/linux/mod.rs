@@ -91,14 +91,12 @@ impl LinuxType {
 
 #[cfg(test)]
 mod tests {
-    use semver::Version;
-
     use os::arch::Architecture;
     use super::LinuxType;
 
     #[test]
     fn amazon_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "amazon", "3.4.6"],
@@ -108,7 +106,7 @@ mod tests {
 
     #[test]
     fn debian7_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "debian71", "3.4.6"],
@@ -118,7 +116,7 @@ mod tests {
 
     #[test]
     fn debian8_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "debian81", "3.4.6"],
@@ -128,7 +126,7 @@ mod tests {
 
     #[test]
     fn legacy_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "3.4.6"],
@@ -138,7 +136,7 @@ mod tests {
 
     #[test]
     fn rhel6_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "rhel62", "3.4.6"],
@@ -148,7 +146,7 @@ mod tests {
 
     #[test]
     fn rhel7_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "rhel70", "3.4.6"],
@@ -158,7 +156,7 @@ mod tests {
 
     #[test]
     fn suse11_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "suse11", "3.4.6"],
@@ -168,7 +166,7 @@ mod tests {
 
     #[test]
     fn suse12_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "suse12", "3.4.6"],
@@ -178,7 +176,7 @@ mod tests {
 
     #[test]
     fn ubuntu1204_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "ubuntu1204", "3.4.6"],
@@ -188,7 +186,7 @@ mod tests {
 
     #[test]
     fn ubuntu1404_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "ubuntu1404", "3.4.6"],
@@ -198,7 +196,7 @@ mod tests {
 
     #[test]
     fn ubuntu1604_arm_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["arm64", "ubuntu1604", "3.4.6"],
@@ -208,7 +206,7 @@ mod tests {
 
     #[test]
     fn ubuntu1604_x86_64_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "ubuntu1604", "3.4.6"],

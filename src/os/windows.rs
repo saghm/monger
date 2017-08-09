@@ -42,13 +42,11 @@ impl WindowsType {
 
 #[cfg(test)]
 mod tests {
-    use semver::Version;
-
     use super::WindowsType;
 
     #[test]
     fn server2008_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "3.4.6", "signed"],
@@ -58,7 +56,7 @@ mod tests {
 
     #[test]
     fn server2008_r2_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "2008plus", "3.4.6", "signed"],
@@ -68,7 +66,7 @@ mod tests {
 
     #[test]
     fn server2008_r2_ssl_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "2008plus", "ssl", "3.4.6", "signed"],

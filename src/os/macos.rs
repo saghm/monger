@@ -29,13 +29,11 @@ impl MacOsType {
 
 #[cfg(test)]
 mod tests {
-    use semver::Version;
-
     use super::MacOsType;
 
     #[test]
     fn nonssl_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["x86_64", "3.4.6"],
@@ -45,7 +43,7 @@ mod tests {
 
     #[test]
     fn ssl_path() {
-        let version = Version::parse("3.4.6").unwrap();
+        let version = version!(3, 4, 6);
 
         assert_eq!(
             vec!["ssl", "x86_64", "3.4.6"],

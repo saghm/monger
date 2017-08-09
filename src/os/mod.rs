@@ -31,7 +31,8 @@ impl OperatingSystem {
     pub fn get() -> Result<Self> {
         match consts::OS {
             "linux" => LinuxType::get().map(OperatingSystem::Linux),
-            "macos" => bail!(ErrorKind::UnsupportedOs("macos".to_string())),
+            // TODO: Use pkg-config to check if SSL is installed.
+            "macos" => Ok(OperatingSystem::MacOs(MacOsType::Ssl)),
             "windows" => bail!(ErrorKind::UnsupportedOs("windows".to_string())),
             s => bail!(ErrorKind::UnsupportedOs(s.to_string())),
         }
@@ -56,7 +57,7 @@ impl OperatingSystem {
     }
 
     pub fn download_url(&self, version: &Version) -> Url {
-        let mut builder = UrlBuilder::new(self.name(), self.extension().name());
+        let mut builder = UrlBuilder::new(self.name(), self.extension().name(), version);
 
         builder.add_distro_path_item("mongodb".to_string());
         builder.add_distro_path_item(self.name().to_string());
@@ -85,11 +86,12 @@ mod tests {
     use super::macos::MacOsType;
     use super::windows::WindowsType;
 
-    fn matches_url(url: &str, os: OperatingSystem) {
-        let version = Version::parse("3.4.6").unwrap();
-        let download_url: String = os.download_url(&version).into();
+    fn matches_url(url: &str, os: OperatingSystem, version: Version) -> String {
+        let download_url = os.download_url(&version);
+        let dirname = download_url.dirname();
 
-        assert_eq!(url, download_url);
+        assert_eq!(url, String::from(download_url));
+        dirname
     }
 
     //
@@ -101,6 +103,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-amazon-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Amazon),
+            version!(3, 4, 6),
         );
     }
 
@@ -109,6 +112,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian71-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Debian7),
+            version!(3, 4, 6),
         );
     }
 
@@ -117,6 +121,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-debian81-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Debian8),
+            version!(3, 4, 6),
         );
     }
 
@@ -125,6 +130,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Legacy),
+            version!(3, 4, 6),
         );
     }
 
@@ -133,13 +139,16 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel62-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Rhel6),
+            version!(3, 4, 6),
         );
     }
+
     #[test]
     fn rhel7_linux_url() {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-rhel70-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Rhel7),
+            version!(3, 4, 6),
         );
     }
 
@@ -148,6 +157,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse11-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Suse11),
+            version!(3, 4, 6),
         );
     }
 
@@ -156,6 +166,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-suse12-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Suse12),
+            version!(3, 4, 6),
         );
     }
 
@@ -164,6 +175,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1204-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Ubuntu1204),
+            version!(3, 4, 6),
         );
     }
 
@@ -172,6 +184,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1404-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Ubuntu1404),
+            version!(3, 4, 6),
         );
     }
 
@@ -180,6 +193,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-arm64-ubuntu1604-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Ubuntu1604(Architecture::Arm)),
+            version!(3, 4, 6),
         );
     }
 
@@ -188,6 +202,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/linux/mongodb-linux-x86_64-ubuntu1604-3.4.6.tgz",
             OperatingSystem::Linux(LinuxType::Ubuntu1604(Architecture::X86_64)),
+            version!(3, 4, 6),
         );
     }
 
@@ -196,19 +211,36 @@ mod tests {
     //
 
     #[test]
-    fn nonssl_macos_url() {
-        matches_url(
+    fn nonssl_osx_url() {
+        let dirname = matches_url(
             "https://fastdl.mongodb.org/osx/mongodb-osx-x86_64-3.4.6.tgz",
             OperatingSystem::MacOs(MacOsType::NonSsl),
+            version!(3, 4, 6),
         );
+
+        assert_eq!(dirname, "mongodb-osx-x86_64-3.4.6");
+    }
+
+    #[test]
+    fn ssl_osx_url() {
+        let dirname = matches_url(
+            "https://fastdl.mongodb.org/osx/mongodb-osx-ssl-x86_64-3.4.6.tgz",
+            OperatingSystem::MacOs(MacOsType::Ssl),
+            version!(3, 4, 6),
+        );
+
+        assert_eq!(dirname, "mongodb-osx-x86_64-3.4.6");
     }
 
     #[test]
     fn ssl_macos_url() {
-        matches_url(
-            "https://fastdl.mongodb.org/osx/mongodb-osx-ssl-x86_64-3.4.6.tgz",
+        let dirname = matches_url(
+            "https://fastdl.mongodb.org/osx/mongodb-osx-ssl-x86_64-3.5.4.tgz",
             OperatingSystem::MacOs(MacOsType::Ssl),
+            version!(3, 5, 4),
         );
+
+        assert_eq!(dirname, "mongodb-macOS-x86_64-3.5.4");
     }
 
     //
@@ -220,6 +252,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/win32/mongodb-win32-x86_64-3.4.6-signed.msi",
             OperatingSystem::Windows(WindowsType::Server2008),
+            version!(3, 4, 6),
         );
     }
 
@@ -229,6 +262,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/win32/mongodb-win32-x86_64-2008plus-3.4.6-signed.msi",
             OperatingSystem::Windows(WindowsType::Server2008R2),
+            version!(3, 4, 6),
         );
     }
 
@@ -237,6 +271,7 @@ mod tests {
         matches_url(
             "https://fastdl.mongodb.org/win32/mongodb-win32-x86_64-2008plus-ssl-3.4.6-signed.msi",
             OperatingSystem::Windows(WindowsType::Server2008R2Ssl),
+            version!(3, 4, 6),
         );
     }
 }

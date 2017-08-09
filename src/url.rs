@@ -1,12 +1,23 @@
+use semver::Version;
+
+lazy_static! {
+    static ref FIRST_MACOS_VERSION: Version = version!(3, 5, 4);
+}
+
 #[derive(Debug)]
 pub struct Url {
     base: String,
     filename: String,
+    dirname: String,
 }
 
 impl Url {
     pub fn filename(&self) -> String {
         self.filename.clone()
+    }
+
+    pub fn dirname(&self) -> String {
+        self.dirname.clone()
     }
 }
 
@@ -17,21 +28,23 @@ impl From<Url> for String {
 }
 
 #[derive(Debug)]
-pub struct UrlBuilder {
-    os: String,
+pub struct UrlBuilder<'a> {
+    os: &'a str,
     distro: Vec<String>,
-    extension: String,
+    extension: &'a str,
+    version: &'a Version,
 }
 
 const SCHEME: &str = "https";
 const DOMAIN: &str = "fastdl.mongodb.org";
 
-impl UrlBuilder {
-    pub fn new(os: &str, extension: &str) -> Self {
+impl<'a> UrlBuilder<'a> {
+    pub fn new(os: &'a str, extension: &'a str, version: &'a Version) -> UrlBuilder<'a> {
         Self {
-            os: os.to_string(),
+            os,
             distro: Vec::new(),
-            extension: extension.to_string(),
+            extension,
+            version,
         }
     }
 
@@ -43,18 +56,37 @@ impl UrlBuilder {
         let base = format!("{}://{}/{}", SCHEME, DOMAIN, self.os);
 
         let mut filename = String::new();
+        let mut dirname = String::new();
 
-        for (i, item) in self.distro.iter().enumerate() {
+        for (i, mut item) in self.distro.into_iter().enumerate() {
             if i != 0 {
-                filename.push_str("-");
+                filename.push('-');
             }
 
             filename.push_str(&item);
+
+            if item == "ssl" {
+                continue;
+            }
+
+            if item == "osx" && self.version >= &FIRST_MACOS_VERSION {
+                item = "macOS".to_string();
+            }
+
+            if i != 0 {
+                dirname.push('-');
+            }
+
+            dirname.push_str(&item);
         }
 
-        filename.push_str(".");
-        filename.push_str(&self.extension);
+        filename.push('.');
+        filename.push_str(self.extension);
 
-        Url { base, filename }
+        Url {
+            base,
+            filename,
+            dirname,
+        }
     }
 }

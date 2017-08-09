@@ -68,7 +68,12 @@ impl Fs {
     }
 
 
-    fn decompress_download<P: AsRef<Path>>(&self, filename: P, dirname: P, version: P) -> Result<()> {
+    fn decompress_download<P: AsRef<Path>>(
+        &self,
+        filename: P,
+        dirname: P,
+        version: P,
+    ) -> Result<()> {
         run_command(
             "tar",
             vec!["xf".as_ref(), filename.as_ref().as_os_str()],

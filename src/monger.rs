@@ -30,10 +30,13 @@ impl Monger {
 
         let url = OperatingSystem::get()?.download_url(&version);
         let file = url.filename();
+        let dir = url.dirname();
         let url: String = url.into();
         let data = self.client.download_file(&url)?;
+
         self.fs.write_mongodb_download(
             &file,
+            &dir,
             &data[..],
             version_str,
         )?;

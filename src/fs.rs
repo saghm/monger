@@ -68,15 +68,14 @@ impl Fs {
     }
 
 
-    fn decompress_download<P: AsRef<Path>>(&self, filename: P, version: P) -> Result<()> {
+    fn decompress_download<P: AsRef<Path>>(&self, filename: P, dirname: P, version: P) -> Result<()> {
         run_command(
             "tar",
             vec!["xf".as_ref(), filename.as_ref().as_os_str()],
             self.get_bin_dir(),
         )?;
 
-        // TODO: Deal with unwrap in a non-messy way.
-        let old_name = self.get_bin_file_abs(filename.as_ref().file_stem().unwrap());
+        let old_name = self.get_bin_file_abs(dirname);
         let new_name = self.get_bin_file_abs(version);
         rename(old_name, new_name)?;
 
@@ -135,6 +134,7 @@ impl Fs {
     pub fn write_mongodb_download(
         &self,
         filename: &str,
+        dirname: &str,
         bytes: &[u8],
         version: &str,
     ) -> Result<()> {
@@ -144,7 +144,7 @@ impl Fs {
         self.write_file(&bin_file, bytes)?;
 
         println!("decompressing...");
-        self.decompress_download(filename, version)?;
+        self.decompress_download(filename, dirname, version)?;
 
         println!("cleaning up...");
         self.delete_file(&bin_file)?;

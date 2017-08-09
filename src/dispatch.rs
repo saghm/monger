@@ -4,7 +4,7 @@ use semver::Version;
 use error::Result;
 use monger::Monger;
 
-pub fn dispatch(args: ArgMatches) -> Result<()> {
+pub fn dispatch(args: &ArgMatches) -> Result<()> {
     let monger = Monger::new()?;
 
     match args.subcommand() {
@@ -72,7 +72,7 @@ fn run(monger: &Monger, matches: &ArgMatches) -> Result<()> {
 
     let args = matches.values_of("BIN_ARGS").unwrap_or_default();
 
-    monger.exec(bin, args, &version)
+    monger.exec(bin, args, version)
 }
 
 fn start(monger: &Monger, matches: &ArgMatches) -> Result<()> {

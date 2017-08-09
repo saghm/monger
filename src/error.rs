@@ -22,7 +22,7 @@ error_chain! {
             description("a subprocess for monger has failed")
             display("{}: {}",
                     cmd,
-                    exit_code.map(|i| format!("{}", i)).unwrap_or("unknown exit code".to_string()))
+                    exit_code.map(|i| format!("{}", i)).unwrap_or_else(|| "unknown exit code".to_string()))
         }
 
         UnknownHomeDirectory {

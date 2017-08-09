@@ -215,12 +215,13 @@ impl FsBuilder {
     pub fn build(self) -> Result<Fs> {
         match home_dir() {
             Some(mut home_dir) => {
-                home_dir.push(self.home_dir.unwrap_or(DEFAULT_HOME_DIR.into()));
+                home_dir.push(self.home_dir.unwrap_or_else(|| DEFAULT_HOME_DIR.into()));
 
-                let bin_dir = Path::new(&self.bin_dir.unwrap_or(DEFAULT_BIN_DIR.into()))
+                let bin_dir = Path::new(&self.bin_dir.unwrap_or_else(|| DEFAULT_BIN_DIR.into()))
                     .to_path_buf();
 
-                let db_dir = Path::new(&self.db_dir.unwrap_or(DEFAULT_DB_DIR.into())).to_path_buf();
+                let db_dir = Path::new(&self.db_dir.unwrap_or_else(|| DEFAULT_DB_DIR.into()))
+                    .to_path_buf();
 
                 Ok(Fs {
                     home_dir,

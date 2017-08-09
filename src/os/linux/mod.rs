@@ -45,10 +45,10 @@ impl LinuxType {
 
         Ok(
             check_ubuntu(id, version_id)
-                .or(check_amazon(id))
-                .or(check_rhel(id, version_id))
-                .or(check_suse(id, version_id))
-                .or(check_debian(id, version_id))
+                .or_else(|| check_amazon(id))
+                .or_else(|| check_rhel(id, version_id))
+                .or_else(|| check_suse(id, version_id))
+                .or_else(|| check_debian(id, version_id))
                 .unwrap_or(LinuxType::Legacy),
         )
     }

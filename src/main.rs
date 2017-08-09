@@ -99,6 +99,6 @@ quick_main!(|| -> Result<i32> {
         )
         .get_matches();
 
-    dispatch(matches)?;
+    dispatch(&matches)?;
     Ok(0)
 });

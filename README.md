@@ -24,7 +24,7 @@ monger <subcommand> --help
 
 ## Supported platforms
 
-`monger` currents only supports Linux
+`monger` currents only supports Linux and OS X/MacOS
 
 ## Development
 

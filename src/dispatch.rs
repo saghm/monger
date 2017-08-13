@@ -3,6 +3,7 @@ use semver::Version;
 
 use error::Result;
 use monger::Monger;
+use util::file_exists_in_path;
 
 pub fn dispatch(args: &ArgMatches) -> Result<()> {
     let monger = Monger::new()?;
@@ -40,10 +41,14 @@ fn list(monger: &Monger) -> Result<()> {
         .list_versions()?
         .into_iter()
         .map(|s| {
-            Version::parse(s.to_string_lossy().as_ref()).map_err(From::from)
+            Version::parse(s.to_string_lossy().as_ref()).map(|v| v.to_string()).map_err(From::from)
         })
         .collect::<Result<_>>()?;
     versions.sort();
+
+    if file_exists_in_path("mongod") {
+        versions.push("system".to_string());
+    }
 
     print!("installed versions:");
 

@@ -1,4 +1,9 @@
+use std::fs::metadata;
+use std::os::unix::fs::PermissionsExt;
+use std::path::Path;
 use std::str::FromStr;
+
+static EXECUTABLE_BITS: u32 = 0b001001001;
 
 pub enum FileExtension {
     Msi,
@@ -44,4 +49,26 @@ macro_rules! version {
             build: Vec::new(),
         }
     }};
+}
+
+#[inline]
+fn is_executable(mode: u32) -> bool {
+    mode & EXECUTABLE_BITS == EXECUTABLE_BITS
+}
+
+pub fn file_exists_in_path<P: AsRef<Path>>(file: P) -> bool {
+    env!("PATH").split(':').any(|dir| {
+        let path = Path::new(dir).join(file.as_ref());
+
+        let data = match metadata(path) {
+            Ok(m) => m,
+            Err(_) => return false,
+        };
+
+        if !data.is_file() {
+            return false;
+        }
+
+        is_executable(data.permissions().mode())
+    })
 }

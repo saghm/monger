@@ -181,7 +181,7 @@ impl Fs {
         exec_command(
             &format!("./{}", binary_name),
             args,
-            self.get_version_bin_dir(version),
+            Some(self.get_version_bin_dir(version)),
         )
     }
 }

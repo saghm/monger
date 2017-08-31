@@ -7,6 +7,7 @@ use client::HttpClient;
 use error::{Error, ErrorKind, Result};
 use fs::Fs;
 use os::OperatingSystem;
+use process::exec_command;
 
 pub struct Monger {
     client: HttpClient,
@@ -60,6 +61,15 @@ impl Monger {
     where
         I: Iterator<Item = OsString>,
     {
+        if version == "system" {
+            let db_dir = self.fs.create_or_get_db_dir("system")?;
+
+            return self.system_exec(
+                "mongod",
+                args.chain(vec!["--dbpath".into(), db_dir.into_os_string()]),
+            );
+        }
+
         let db_dir = self.fs.create_or_get_db_dir(version)?;
         self.exec(
             "mongod",
@@ -68,11 +78,23 @@ impl Monger {
         )
     }
 
+    fn system_exec<I, S>(&self, binary_name: &str, args: I) -> Result<()>
+    where
+        I: IntoIterator<Item = S>,
+        S: AsRef<OsStr>,
+    {
+        exec_command::<_, _, &str>(binary_name, args, None)
+    }
+
     pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>
     where
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
+        if version == "system" {
+            return self.system_exec(binary_name, args);
+        }
+
         match self.fs.exec(binary_name, args, version) {
             Err(Error(ErrorKind::Io(ref io_err), _)) if io_err.kind() == NotFound => {
                 bail!(ErrorKind::BinaryNotFound(

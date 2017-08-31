@@ -25,10 +25,10 @@ fn get_next_page_url_from_response(response: &Response) -> Option<String> {
 
 impl Tags {
     pub fn from_response(response: Response) -> Result<Self> {
-       Ok(Tags {
-           next: get_next_page_url_from_response(&response),
-           value: serde_json::from_reader(response)?,
-       })
+        Ok(Tags {
+            next: get_next_page_url_from_response(&response),
+            value: serde_json::from_reader(response)?,
+        })
     }
 
     pub fn next_page_url(self) -> Option<String> {

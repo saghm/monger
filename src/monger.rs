@@ -2,12 +2,15 @@ use std::ffi::{OsStr, OsString};
 use std::io::ErrorKind::NotFound;
 
 use semver::Version;
+use serde_json::Value;
 
 use client::HttpClient;
 use error::{Error, ErrorKind, Result};
 use fs::Fs;
 use os::OperatingSystem;
 use process::exec_command;
+
+const MONGODB_GIT_TAGS_URL: &str = "https://api.github.com/repos/mongodb/mongo/tags";
 
 pub struct Monger {
     client: HttpClient,
@@ -23,11 +26,17 @@ impl Monger {
     }
 
     pub fn download_mongodb_version(&self, version_str: &str) -> Result<()> {
-        if self.fs.version_exists(version_str) {
+        let version = if version_str == "latest" {
+          self.find_latest_mongodb_version()?
+        } else {
+            Version::parse(version_str)?
+        };
+
+        let version_str = format!("{}", version);
+
+        if self.fs.version_exists(&version_str) {
             return Ok(());
         }
-
-        let version = Version::parse(version_str)?;
 
         let url = OperatingSystem::get()?.download_url(&version);
         let file = url.filename();
@@ -39,10 +48,41 @@ impl Monger {
             &file,
             &dir,
             &data[..],
-            version_str,
+            &version_str,
         )?;
 
         Ok(())
+    }
+
+    fn find_latest_mongodb_version(&self) -> Result<Version> {
+        let json = self.client.get_json(MONGODB_GIT_TAGS_URL)?;
+        let array = match json {
+            Value::Array(values) => values,
+            _ => bail!(ErrorKind::InvalidJson(MONGODB_GIT_TAGS_URL.to_string())),
+        };
+
+        for value in array {
+            let name = match value.get("name") {
+                Some(&Value::String(ref s)) => s,
+                _ => continue,
+            };
+
+            if !name.starts_with('r') {
+                continue;
+            }
+
+            let version = match Version::parse(&name[1..]) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+
+            // Only even-numbered minor versions without an rc tag are stable.
+            if version.minor % 2 == 0 && version.pre.is_empty() && version.build.is_empty() {
+                return Ok(version);
+            }
+        }
+
+        bail!(ErrorKind::InvalidJson(MONGODB_GIT_TAGS_URL.to_string()))
     }
 
     pub fn delete_mongodb_version(&self, version: &str) -> Result<()> {

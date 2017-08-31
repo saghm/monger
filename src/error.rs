@@ -3,6 +3,7 @@ error_chain! {
         Clap(::clap::Error);
         Http(::reqwest::Error);
         Io(::std::io::Error);
+        Json(::serde_json::Error);
         OsRelease(::rs_release::OsReleaseError);
         SemVer(::semver::SemVerError);
     }
@@ -22,7 +23,14 @@ error_chain! {
             description("a subprocess for monger has failed")
             display("{}: {}",
                     cmd,
-                    exit_code.map(|i| format!("{}", i)).unwrap_or_else(|| "unknown exit code".to_string()))
+                    exit_code
+                        .map(|i| format!("{}", i))
+                        .unwrap_or_else(|| "unknown exit code".to_string()))
+        }
+
+        InvalidJson(url: String) {
+            description("JSON did not match expected structure")
+            display("JSON response from {} did not match expected structure", url)
         }
 
         UnknownHomeDirectory {

@@ -1,6 +1,7 @@
 use std::io::Read;
 
 use reqwest::{Client, ClientBuilder};
+use serde_json::{self, Value};
 
 use error::Result;
 
@@ -11,6 +12,13 @@ pub struct HttpClient {
 impl HttpClient {
     pub fn new() -> Result<Self> {
         Ok(Self { client: ClientBuilder::new()?.gzip(false).build()? })
+    }
+
+    pub fn get_json(&self, url: &str) -> Result<Value> {
+        let response = self.client.get(url)?.send()?;
+        let value = serde_json::from_reader(response)?;
+
+        Ok(value)
     }
 
     pub fn download_file(&self, url: &str) -> Result<Vec<u8>> {

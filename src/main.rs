@@ -6,6 +6,7 @@ extern crate error_chain;
 extern crate lazy_static;
 extern crate reqwest;
 extern crate rs_release;
+extern crate serde_json;
 extern crate semver;
 
 #[macro_use]

@@ -19,6 +19,7 @@ mod fs;
 mod monger;
 mod os;
 mod process;
+mod tags;
 mod url;
 
 use clap::{App, AppSettings, Arg, SubCommand};

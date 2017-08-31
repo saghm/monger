@@ -3,6 +3,8 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::str::FromStr;
 
+use semver::Version;
+
 static EXECUTABLE_BITS: u32 = 0b001001001;
 
 pub enum FileExtension {
@@ -71,4 +73,14 @@ pub fn file_exists_in_path<P: AsRef<Path>>(file: P) -> bool {
 
         is_executable(data.permissions().mode())
     })
+}
+
+pub fn select_newer_version(existing: Option<Version>, found: Version) -> Version {
+    if let Some(version) = existing {
+        if version > found {
+            return version;
+        }
+    }
+
+    found
 }

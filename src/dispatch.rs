@@ -41,7 +41,9 @@ fn list(monger: &Monger) -> Result<()> {
         .list_versions()?
         .into_iter()
         .map(|s| {
-            Version::parse(s.to_string_lossy().as_ref()).map(|v| v.to_string()).map_err(From::from)
+            Version::parse(s.to_string_lossy().as_ref())
+                .map(|v| v.to_string())
+                .map_err(From::from)
         })
         .collect::<Result<_>>()?;
     versions.sort();

@@ -53,7 +53,8 @@ impl Monger {
     }
 
     pub fn list_versions(&self) -> Result<Vec<OsString>> {
-        self.fs.list_versions() }
+        self.fs.list_versions()
+    }
 
     pub fn start_mongod<I>(&self, args: I, version: &str) -> Result<()>
     where

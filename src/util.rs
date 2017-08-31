@@ -5,7 +5,7 @@ use std::str::FromStr;
 
 use semver::Version;
 
-static EXECUTABLE_BITS: u32 = 0b001001001;
+static EXECUTABLE_BITS: u32 = 0b0_0100_1001;
 
 pub enum FileExtension {
     Msi,

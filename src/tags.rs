@@ -1,5 +1,5 @@
 use reqwest::Response;
-use reqwest::header::{Link, LinkValue, RelationType};
+use reqwest::header::{Link, RelationType};
 use serde_json::{self, Value};
 
 use error::Result;
@@ -11,6 +11,7 @@ pub struct Tags {
 
 fn get_next_page_url_from_response(response: &Response) -> Option<String> {
     let link_header: &Link = try_option!(response.headers().get());
+
     let value = link_header.values().iter().find(|link_value| {
         let rels = match link_value.rel() {
             Some(rels) => rels,
@@ -20,7 +21,7 @@ fn get_next_page_url_from_response(response: &Response) -> Option<String> {
         rels.iter().any(|rel| *rel == RelationType::Next)
     });
 
-    value.and_then(LinkValue::anchor).map(|s| s.to_string())
+    value.map(|v| v.link().to_string())
 }
 
 impl Tags {

@@ -1,6 +1,7 @@
 use std::ffi::{OsStr, OsString};
 use std::io::ErrorKind::NotFound;
 
+use regex::Regex;
 use semver::Version;
 use serde_json::Value;
 
@@ -13,6 +14,10 @@ use tags::Tags;
 use util::select_newer_version;
 
 const MONGODB_GIT_TAGS_URL: &str = "https://api.github.com/repos/mongodb/mongo/tags?per_page=100";
+
+lazy_static! {
+    static ref VERSION_WITHOUT_PATCH: Regex = Regex::new(r"^(\d+)\.(\d+)$").unwrap();
+}
 
 pub struct Monger {
     client: HttpClient,
@@ -30,8 +35,16 @@ impl Monger {
     pub fn download_mongodb_version(&self, version_str: &str) -> Result<()> {
         let version = if version_str == "latest" {
             self.find_latest_mongodb_version()?
+        } else if let Some(captures) = VERSION_WITHOUT_PATCH.captures(version_str) {
+            self.find_latest_matching_version(
+                captures[1].parse().unwrap(),
+                captures[2].parse().unwrap(),
+            )?
         } else {
-            Version::parse(version_str)?
+            Version::parse(version_str).map_err(|_| {
+                let err: Error = ErrorKind::VersionNotFound(version_str.to_string()).into();
+                err
+            })?
         };
 
         let version_str = format!("{}", version);
@@ -54,6 +67,51 @@ impl Monger {
         )?;
 
         Ok(())
+    }
+
+    fn find_latest_matching_version(&self, major: u64, minor: u64) -> Result<Version> {
+        let mut page = Some(MONGODB_GIT_TAGS_URL.to_string());
+
+        while let Some(current_page) = page {
+            let response = self.client.get(&current_page)?;
+            let tags = Tags::from_response(response)?;
+
+            {
+                let array = match *tags.get_value() {
+                    Value::Array(ref values) => values,
+                    _ => bail!(ErrorKind::InvalidJson(MONGODB_GIT_TAGS_URL.to_string())),
+                };
+
+                for value in array {
+                    let name = match value.get("name") {
+                        Some(&Value::String(ref s)) => s,
+                        _ => continue,
+                    };
+
+                    if !name.starts_with('r') {
+                        continue;
+                    }
+
+                    let version = match Version::parse(&name[1..]) {
+                        Ok(v) => v,
+                        Err(_) => continue,
+                    };
+
+                    // Skip release candidates.
+                    if !version.pre.is_empty() || !version.build.is_empty() {
+                        continue;
+                    }
+
+                    if version.major == major && version.minor == minor {
+                        return Ok(version);
+                    }
+                }
+            }
+
+            page = tags.next_page_url();
+        }
+
+        bail!(ErrorKind::VersionNotFound(format!("{}.{}", major, minor)))
     }
 
     fn find_latest_mongodb_version(&self) -> Result<Version> {

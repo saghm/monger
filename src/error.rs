@@ -47,5 +47,10 @@ error_chain! {
             description("unsupported operating system")
             display("{} is currently unsupported", t)
         }
+
+        VersionNotFound(t: String) {
+            description("unable to find specified version")
+            display("unable to find version: {}", t)
+        }
     }
 }

@@ -1,7 +1,6 @@
 use std::ffi::{OsStr, OsString};
 use std::io::ErrorKind::NotFound;
 
-use regex::Regex;
 use semver::Version;
 use serde_json::Value;
 
@@ -11,13 +10,9 @@ use fs::Fs;
 use os::OperatingSystem;
 use process::exec_command;
 use tags::Tags;
-use util::select_newer_version;
+use util::{parse_major_minor_version, select_newer_version};
 
 const MONGODB_GIT_TAGS_URL: &str = "https://api.github.com/repos/mongodb/mongo/tags?per_page=100";
-
-lazy_static! {
-    static ref VERSION_WITHOUT_PATCH: Regex = Regex::new(r"^(\d+)\.(\d+)$").unwrap();
-}
 
 pub struct Monger {
     client: HttpClient,
@@ -35,11 +30,8 @@ impl Monger {
     pub fn download_mongodb_version(&self, version_str: &str) -> Result<()> {
         let version = if version_str == "latest" {
             self.find_latest_mongodb_version()?
-        } else if let Some(captures) = VERSION_WITHOUT_PATCH.captures(version_str) {
-            self.find_latest_matching_version(
-                captures[1].parse().unwrap(),
-                captures[2].parse().unwrap(),
-            )?
+        } else if let Some((major, minor)) = parse_major_minor_version(version_str) {
+            self.find_latest_matching_version(major, minor)?
         } else {
             Version::parse(version_str).map_err(|_| {
                 let err: Error = ErrorKind::VersionNotFound(version_str.to_string()).into();
@@ -210,11 +202,13 @@ impl Monger {
             );
         }
 
-        let db_dir = self.fs.create_or_get_db_dir(version)?;
+        let version = self.fs.get_newest_matching_version(version)?;
+
+        let db_dir = self.fs.create_or_get_db_dir(&version)?;
         self.exec(
             "mongod",
             args.chain(vec!["--dbpath".into(), db_dir.into_os_string()]),
-            version,
+            &version,
         )
     }
 
@@ -235,11 +229,13 @@ impl Monger {
             return self.system_exec(binary_name, args);
         }
 
-        match self.fs.exec(binary_name, args, version) {
+        let version = self.fs.get_newest_matching_version(version)?;
+
+        match self.fs.exec(binary_name, args, &version) {
             Err(Error(ErrorKind::Io(ref io_err), _)) if io_err.kind() == NotFound => {
                 bail!(ErrorKind::BinaryNotFound(
                     binary_name.to_string(),
-                    version.to_string(),
+                    version,
                 ))
             }
             other => other,

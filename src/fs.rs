@@ -9,6 +9,7 @@ use semver::Version;
 
 use error::{ErrorKind, Result};
 use process::{exec_command, run_command};
+use util::{parse_major_minor_version, select_newer_version};
 
 const DEFAULT_HOME_DIR: &str = ".monger";
 const DEFAULT_BIN_DIR: &str = "mongodb-versions";
@@ -59,6 +60,54 @@ impl Fs {
     #[inline]
     fn get_version_bin_dir<P: AsRef<Path>>(&self, version: P) -> PathBuf {
         self.get_bin_file_abs(version.as_ref().join("bin"))
+    }
+
+    #[inline]
+    pub fn version_exists(&self, version: &str) -> bool {
+        self.get_version_dir(version).is_dir()
+    }
+
+    pub fn get_newest_matching_version(&self, version: &str) -> Result<String> {
+        if Version::parse(version).is_ok() {
+            let version_string = version.to_string();
+
+            if self.version_exists(version) {
+                return Ok(version_string);
+            } else {
+                bail!(ErrorKind::InvalidVersion(version_string));
+            }
+        }
+
+        let (target_major, target_minor) = match parse_major_minor_version(version) {
+            Some(pair) => pair,
+            None => bail!(ErrorKind::InvalidVersion(version.to_string())),
+        };
+
+        let mut newest_patch = None;
+
+        for e in read_dir(self.get_bin_dir())? {
+            let entry = e?;
+
+            if !entry.file_type()?.is_dir() {
+                continue;
+            }
+
+            let v = match Version::parse(&entry.file_name().to_string_lossy()) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+
+            if v.major == target_major && v.minor == target_minor {
+                newest_patch = Some(select_newer_version(newest_patch, v));
+            }
+        }
+
+        let matching_version = match newest_patch {
+            Some(version) => format!("{}", version),
+            None => bail!(ErrorKind::InvalidVersion(version.to_string())),
+        };
+
+        Ok(matching_version)
     }
 
     fn create(&self) -> Result<()> {
@@ -119,11 +168,6 @@ impl Fs {
         file.write_all(bytes)?;
 
         Ok(())
-    }
-
-    #[inline]
-    pub fn version_exists(&self, version: &str) -> bool {
-        self.get_version_dir(version).is_dir()
     }
 
     pub fn create_or_get_db_dir(&self, version: &str) -> Result<PathBuf> {

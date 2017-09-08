@@ -3,9 +3,14 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::str::FromStr;
 
+use regex::Regex;
 use semver::Version;
 
 static EXECUTABLE_BITS: u32 = 0b0_0100_1001;
+
+lazy_static! {
+    static ref VERSION_WITHOUT_PATCH: Regex = Regex::new(r"^(\d+)\.(\d+)$").unwrap();
+}
 
 pub enum FileExtension {
     Msi,
@@ -83,4 +88,10 @@ pub fn select_newer_version(existing: Option<Version>, found: Version) -> Versio
     }
 
     found
+}
+
+pub fn parse_major_minor_version(version: &str) -> Option<(u64, u64)> {
+    VERSION_WITHOUT_PATCH.captures(version).map(|c| {
+        (c[1].parse().unwrap(), c[2].parse().unwrap())
+    })
 }

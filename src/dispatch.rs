@@ -65,7 +65,6 @@ fn list(monger: &Monger) -> Result<()> {
         }
     }
 
-
     Ok(())
 }
 

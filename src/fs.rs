@@ -51,7 +51,6 @@ impl Fs {
         self.db_dir.join(filename)
     }
 
-
     #[inline]
     fn get_version_dir(&self, version: &str) -> PathBuf {
         self.get_bin_file_abs(version)
@@ -62,14 +61,12 @@ impl Fs {
         self.get_bin_file_abs(version.as_ref().join("bin"))
     }
 
-
     fn create(&self) -> Result<()> {
         create_dir_all(self.get_file(self.bin_dir.as_path()).as_path())?;
         create_dir_all(self.get_file(self.db_dir.as_path()).as_path())?;
 
         Ok(())
     }
-
 
     fn decompress_download<P: AsRef<Path>>(
         &self,

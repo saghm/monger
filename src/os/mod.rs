@@ -256,7 +256,6 @@ mod tests {
         );
     }
 
-
     #[test]
     fn server2008_r2_windows_url() {
         matches_url(

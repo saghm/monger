@@ -65,6 +65,9 @@ quick_main!(|| -> Result<i32> {
         .subcommand(SubCommand::with_name("list").about(
             "lists installed MongoDB versions",
         ))
+        .subcommand(SubCommand::with_name("prune").about(
+            "deletes versions of MongoDB where a newer stable version of the same minor version is installed"
+        ))
         .subcommand(
             SubCommand::with_name("run")
                 .about("run a binary of a downloaded MongoDB version")

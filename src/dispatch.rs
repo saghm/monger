@@ -10,8 +10,9 @@ pub fn dispatch(args: &ArgMatches) -> Result<()> {
 
     match args.subcommand() {
         ("delete", Some(m)) => delete(&monger, m),
-        ("list", _) => list(&monger),
         ("get", Some(m)) => get(&monger, m),
+        ("prune", _) => prune(&monger),
+        ("list", _) => list(&monger),
         ("run", Some(m)) => run(&monger, m),
         ("start", Some(m)) => start(&monger, m),
         _ => invariant!("subcommand must be provided with requisite args"),
@@ -66,6 +67,10 @@ fn list(monger: &Monger) -> Result<()> {
 
 
     Ok(())
+}
+
+fn prune(monger: &Monger) -> Result<()> {
+    monger.prune()
 }
 
 fn run(monger: &Monger, matches: &ArgMatches) -> Result<()> {

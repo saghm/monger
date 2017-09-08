@@ -1,8 +1,11 @@
+use std::collections::{BinaryHeap, HashMap};
 use std::env::home_dir;
 use std::fs::{create_dir_all, OpenOptions, read_dir, remove_dir_all, remove_file, rename};
 use std::io::Write;
 use std::ffi::{OsStr, OsString};
 use std::path::{Path, PathBuf};
+
+use semver::Version;
 
 use error::{ErrorKind, Result};
 use process::{exec_command, run_command};
@@ -171,6 +174,49 @@ impl Fs {
         }
 
         Ok(versions)
+    }
+
+    pub fn prune(&self) -> Result<()> {
+        let mut versions: HashMap<(u64, u64), _> = HashMap::new();
+
+        for e in read_dir(self.get_bin_dir())? {
+            let entry = e?;
+
+            // Skip unless the entry is a directory.
+            if !entry.file_type().map(|t| t.is_dir()).unwrap_or(false) {
+                continue;
+            }
+
+            let version = match Version::parse(entry.file_name().to_string_lossy().as_ref()) {
+                Ok(v) => v,
+                Err(_) => continue,
+            };
+
+            versions
+                .entry((version.major, version.minor))
+                .or_insert_with(BinaryHeap::new)
+                .push(version);
+        }
+
+        for (_, vs) in versions {
+            self.prune_versions(vs)?;
+        }
+
+        Ok(())
+    }
+
+    fn prune_versions(&self, mut versions: BinaryHeap<Version>) -> Result<()> {
+        while let Some(version) = versions.pop() {
+            if version.build.is_empty() && version.pre.is_empty() {
+                break;
+            }
+        }
+
+        for version in versions {
+            self.delete_mongodb_version(&format!("{}", version))?;
+        }
+
+        Ok(())
     }
 
     pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>

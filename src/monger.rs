@@ -193,6 +193,10 @@ impl Monger {
         self.fs.list_versions()
     }
 
+    pub fn prune(&self) -> Result<()> {
+        self.fs.prune()
+    }
+
     pub fn start_mongod<I>(&self, args: I, version: &str) -> Result<()>
     where
         I: Iterator<Item = OsString>,

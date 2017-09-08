@@ -203,14 +203,20 @@ impl Fs {
     }
 
     fn prune_versions(&self, mut versions: BinaryHeap<Version>) -> Result<()> {
-        while let Some(version) = versions.pop() {
-            if version.build.is_empty() && version.pre.is_empty() {
-                break;
+        let latest_stable = loop {
+            match versions.pop() {
+                Some(version) => {
+                    if version.build.is_empty() && version.pre.is_empty() {
+                        break version;
+                    }
+                }
+                None => return Ok(())
             }
-        }
+        };
 
         for version in versions {
             self.delete_mongodb_version(&format!("{}", version))?;
+            println!("Deleted {} (because {} is installed)", version, latest_stable);
         }
 
         Ok(())

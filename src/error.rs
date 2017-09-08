@@ -33,6 +33,11 @@ error_chain! {
             display("JSON response from {} did not match expected structure", url)
         }
 
+        InvalidVersion(version: String) {
+            description("The provided version of MongoDB does not exist")
+            display("MongoDB version {} does not exist", version)
+        }
+
         UnknownHomeDirectory {
             description("unable to find home directory")
             display("unable to find home directory")

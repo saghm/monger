@@ -57,7 +57,7 @@ impl Monger {
         let file = url.filename();
         let dir = url.dirname();
         let url: String = url.into();
-        let data = self.client.download_file(&url)?;
+        let data = self.client.download_file(&url, &version_str)?;
 
         self.fs.write_mongodb_download(
             &file,

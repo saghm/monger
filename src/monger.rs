@@ -233,10 +233,7 @@ impl Monger {
 
         match self.fs.exec(binary_name, args, &version) {
             Err(Error(ErrorKind::Io(ref io_err), _)) if io_err.kind() == NotFound => {
-                bail!(ErrorKind::BinaryNotFound(
-                    binary_name.to_string(),
-                    version,
-                ))
+                bail!(ErrorKind::BinaryNotFound(binary_name.to_string(), version))
             }
             other => other,
         }

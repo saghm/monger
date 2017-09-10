@@ -3,7 +3,7 @@ language: rust
 cache: cargo
 
 script:
-    cargo build --verbose
-    cargo run -- get 3.4
-    cargo run -- run 3.4 mongod --version
+    - cargo build --verbose
+    - cargo run -- get 3.4
+    - cargo run -- run 3.4 mongod --version
 

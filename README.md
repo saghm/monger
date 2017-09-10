@@ -1,4 +1,4 @@
-[![crates.io](https://img.shields.io/crates/v/monger.svg)](https://crates.io/crates/monger)
+[![Travis](https://travis-ci.org/saghm/monger.svg)](https://travis-ci.org/saghm/monger) [![crates.io](https://img.shields.io/crates/v/monger.svg)](https://crates.io/crates/monger)
 
 # monger - MongoDB Version Manager
 

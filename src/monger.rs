@@ -71,7 +71,10 @@ impl Monger {
             {
                 let array = match *tags.get_value() {
                     Value::Array(ref values) => values,
-                    _ => bail!(ErrorKind::InvalidJson(MONGODB_GIT_TAGS_URL.to_string())),
+                    ref e => {
+                        println!("array expected: {}", e);
+                        bail!(ErrorKind::InvalidJson(MONGODB_GIT_TAGS_URL.to_string()))
+                    }
                 };
 
                 for value in array {

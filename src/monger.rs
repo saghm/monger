@@ -234,7 +234,7 @@ impl Monger {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        exec_command::<_, &str>(binary_name, args.into_iter().collect(), None)
+        exec_command(binary_name, args.into_iter().collect())
     }
 
     pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>

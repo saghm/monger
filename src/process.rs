@@ -25,23 +25,11 @@ where
     Ok(())
 }
 
-pub fn exec_command<S, P>(cmd: &str, args: Vec<S>, dir: Option<P>) -> Result<()>
+pub fn exec_command<S>(cmd: &str, args: Vec<S>) -> Result<()>
 where
     S: AsRef<OsStr>,
-    P: AsRef<Path>,
 {
-    let command_string = if cmd.starts_with("./") {
-        &cmd[2..]
-    } else {
-        cmd
-    };
-
-    let binary_path = dir.as_ref()
-        .map(P::as_ref)
-        .unwrap_or_else(|| Path::new(""))
-        .join(command_string);
-
-    print!("running {}", binary_path.display());
+    print!("running {}", cmd);
 
     for arg in &args {
         print!(" {}", arg.as_ref().to_string_lossy());
@@ -51,10 +39,6 @@ where
 
     let mut command = Command::new(cmd);
     command.args(args);
-
-    if let Some(path) = dir {
-        command.current_dir(path);
-    }
 
     Err(command.exec().into())
 }

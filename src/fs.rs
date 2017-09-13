@@ -285,9 +285,8 @@ impl Fs {
         S: AsRef<OsStr>,
     {
         exec_command(
-            &format!("./{}", binary_name),
+            self.get_version_bin_dir(version)?.join(binary_name).to_string_lossy().as_ref(),
             args,
-            Some(self.get_version_bin_dir(version)?),
         )
     }
 }

@@ -4,7 +4,7 @@ description = "MongoDB version manager"
 license = "Apache-2.0"
 name = "monger"
 repository = "https://github.com/saghm/monger"
-version = "0.5.1"
+version = "0.5.2"
 
 [dependencies]
 clap = "2.26.0"

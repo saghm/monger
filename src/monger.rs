@@ -189,27 +189,44 @@ impl Monger {
         self.fs.prune()
     }
 
+    fn process_args<I>(&self, mut args: I, version: &str) -> Result<Vec<OsString>>
+    where
+        I: Iterator<Item = OsString>,
+    {
+        let mut processed_args = Vec::new();
+        let mut found_dbpath = false;
+
+        while let Some(arg) = args.next() {
+            if arg.as_os_str() == "--dbpath" {
+                processed_args.push(arg);
+                found_dbpath = true;
+                break;
+            }
+
+            processed_args.push(arg);
+        }
+
+        if found_dbpath {
+            processed_args.extend(args);
+        } else {
+            processed_args.push("--dbpath".into());
+            processed_args.push(self.fs.create_or_get_db_dir(version)?.into_os_string());
+        }
+
+        return Ok(processed_args);
+    }
+
     pub fn start_mongod<I>(&self, args: I, version: &str) -> Result<()>
     where
         I: Iterator<Item = OsString>,
     {
+        let processed_args = self.process_args(args, version)?;
+
         if version == "system" {
-            let db_dir = self.fs.create_or_get_db_dir("system")?;
-
-            return self.system_exec(
-                "mongod",
-                args.chain(vec!["--dbpath".into(), db_dir.into_os_string()]),
-            );
+            self.system_exec("mongod", processed_args)
+        } else {
+            self.exec("mongod", processed_args, &version)
         }
-
-        let version = self.fs.get_newest_matching_version(version)?;
-
-        let db_dir = self.fs.create_or_get_db_dir(&version)?;
-        self.exec(
-            "mongod",
-            args.chain(vec!["--dbpath".into(), db_dir.into_os_string()]),
-            &version,
-        )
     }
 
     fn system_exec<I, S>(&self, binary_name: &str, args: I) -> Result<()>
@@ -217,7 +234,7 @@ impl Monger {
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        exec_command::<_, _, &str>(binary_name, args, None)
+        exec_command::<_, &str>(binary_name, args.into_iter().collect(), None)
     }
 
     pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>
@@ -229,11 +246,16 @@ impl Monger {
             return self.system_exec(binary_name, args);
         }
 
-        let version = self.fs.get_newest_matching_version(version)?;
-
-        match self.fs.exec(binary_name, args, &version) {
+        match self.fs.exec(
+            binary_name,
+            args.into_iter().collect(),
+            &version,
+        ) {
             Err(Error(ErrorKind::Io(ref io_err), _)) if io_err.kind() == NotFound => {
-                bail!(ErrorKind::BinaryNotFound(binary_name.to_string(), version))
+                bail!(ErrorKind::BinaryNotFound(
+                    binary_name.to_string(),
+                    version.to_string(),
+                ))
             }
             other => other,
         }

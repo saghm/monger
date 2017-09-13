@@ -57,9 +57,12 @@ impl Fs {
         self.get_bin_file_abs(version)
     }
 
-    #[inline]
-    fn get_version_bin_dir<P: AsRef<Path>>(&self, version: P) -> PathBuf {
-        self.get_bin_file_abs(version.as_ref().join("bin"))
+    fn get_version_bin_dir(&self, version: &str) -> Result<PathBuf> {
+        let matched_version_str = self.get_newest_matching_version(version)?;
+        let matched_version_path = Path::new(&matched_version_str);
+        let path = self.get_bin_file_abs(matched_version_path.join("bin"));
+
+        Ok(path)
     }
 
     #[inline]
@@ -67,7 +70,11 @@ impl Fs {
         self.get_version_dir(version).is_dir()
     }
 
-    pub fn get_newest_matching_version(&self, version: &str) -> Result<String> {
+    fn get_newest_matching_version(&self, version: &str) -> Result<String> {
+        if version == "system" {
+            return Ok(version.to_string());
+        }
+
         if Version::parse(version).is_ok() {
             let version_string = version.to_string();
 
@@ -173,7 +180,8 @@ impl Fs {
     }
 
     pub fn create_or_get_db_dir(&self, version: &str) -> Result<PathBuf> {
-        let db_dir = self.get_file(self.get_db_file_rel(version));
+        let matching_version = self.get_newest_matching_version(version)?;
+        let db_dir = self.get_file(self.get_db_file_rel(matching_version));
         create_dir_all(db_dir.as_path())?;
         Ok(db_dir)
     }
@@ -272,15 +280,14 @@ impl Fs {
         Ok(())
     }
 
-    pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>
+    pub fn exec<S>(&self, binary_name: &str, args: Vec<S>, version: &str) -> Result<()>
     where
-        I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
         exec_command(
             &format!("./{}", binary_name),
             args,
-            Some(self.get_version_bin_dir(version)),
+            Some(self.get_version_bin_dir(version)?),
         )
     }
 }

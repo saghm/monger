@@ -76,9 +76,12 @@ To specify additional arguments to `mongod`, simply append `--`:
 monger start 3.4.7 -- --fork --syslog
 ```
 
-NOTE: Currently, --dbpath will be set to the directory `~/.monger/db/<VERSION>`. This can't
-currently be overridden, although in the future this will be fixed so that users can specific a
-non-default path.
+By default, --dbpath will be set to the directory `~/.monger/db/<VERSION>`. To use a different path,
+pass the --dbpath argument as normal along with any other arguments:
+
+```
+monger start 3.4 -- --dbpath path/to/db --fork --syslog
+```
 
 ### Running a MongoDB binary
 

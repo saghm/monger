@@ -28,11 +28,21 @@ pub enum OperatingSystem {
 }
 
 impl OperatingSystem {
-    pub fn get() -> Result<Self> {
+    pub fn get(version: &Version) -> Result<Self> {
         match consts::OS {
             "linux" => LinuxType::get().map(OperatingSystem::Linux),
-            // TODO: Use pkg-config to check if SSL is installed.
-            "macos" => Ok(OperatingSystem::MacOs(MacOsType::Ssl)),
+            "macos" => {
+                // MongoDB releases before 3.0 for MacOS did not link to an SSL library.
+                //
+                // TODO: Use pkg-config to check if SSL is installed as well.
+                let macos_type = if version.major < 3 {
+                    MacOsType::NonSsl
+                } else {
+                    MacOsType::Ssl
+                };
+
+                Ok(OperatingSystem::MacOs(macos_type))
+            },
             "windows" => bail!(ErrorKind::UnsupportedOs("windows".to_string())),
             s => bail!(ErrorKind::UnsupportedOs(s.to_string())),
         }

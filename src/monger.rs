@@ -45,7 +45,7 @@ impl Monger {
             return Ok(());
         }
 
-        let url = OperatingSystem::get()?.download_url(&version);
+        let url = OperatingSystem::get(&version)?.download_url(&version);
         let file = url.filename();
         let dir = url.dirname();
         let url: String = url.into();

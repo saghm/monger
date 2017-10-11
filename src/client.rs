@@ -10,18 +10,18 @@ pub struct HttpClient {
 
 impl HttpClient {
     pub fn new() -> Result<Self> {
-        Ok(Self { client: ClientBuilder::new()?.gzip(false).build()? })
+        Ok(Self { client: ClientBuilder::new().gzip(false).build()? })
     }
 
     pub fn get(&self, url: &str) -> Result<Response> {
-        let response = self.client.get(url)?.send()?;
+        let response = self.client.get(url).send()?;
         Ok(response)
     }
 
     pub fn download_file(&self, url: &str, version: &str) -> Result<Vec<u8>> {
         println!("downloading {}...", url);
         let mut data = Vec::new();
-        let mut response = self.client.get(url)?.send()?;
+        let mut response = self.client.get(url).send()?;
 
         if !response.status().is_success() {
             bail!(ErrorKind::InvalidVersion(version.to_string()))

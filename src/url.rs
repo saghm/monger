@@ -2,6 +2,11 @@ use semver::Version;
 
 lazy_static! {
     static ref FIRST_MACOS_VERSION: Version = version!(3, 5, 4);
+    static ref LAST_MACOS_VERSION: Version = version!(3, 6, 0);
+}
+
+fn name_uses_macos(version: &Version) -> bool {
+    version >= &FIRST_MACOS_VERSION && version < &LAST_MACOS_VERSION
 }
 
 #[derive(Debug)]
@@ -69,7 +74,7 @@ impl<'a> UrlBuilder<'a> {
                 continue;
             }
 
-            if item == "osx" && self.version >= &FIRST_MACOS_VERSION {
+            if item == "osx" && name_uses_macos(self.version) {
                 item = "macOS".to_string();
             }
 

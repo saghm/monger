@@ -140,6 +140,7 @@ impl Fs {
 
         let old_name = self.get_bin_file_abs(dirname);
         let new_name = self.get_bin_file_abs(version);
+
         rename(old_name, new_name)?;
 
         Ok(())

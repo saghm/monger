@@ -386,7 +386,7 @@ dependencies = [
 
 [[package]]
 name = "monger"
-version = "0.5.5"
+version = "0.5.6"
 dependencies = [
  "clap 2.30.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "error-chain 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",

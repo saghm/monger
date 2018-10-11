@@ -1,10 +1,10 @@
 use std::collections::{BinaryHeap, HashMap};
-use std::env::home_dir;
 use std::ffi::{OsStr, OsString};
 use std::fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, OpenOptions};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use dirs::home_dir;
 use semver::Version;
 
 use error::{ErrorKind, Result};

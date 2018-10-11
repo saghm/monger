@@ -2,6 +2,7 @@
 
 #[macro_use]
 extern crate clap;
+extern crate dirs;
 #[macro_use]
 extern crate error_chain;
 extern crate hyperx;

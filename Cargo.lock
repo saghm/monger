@@ -549,7 +549,7 @@ dependencies = [
 
 [[package]]
 name = "monger"
-version = "0.5.6"
+version = "0.5.7"
 dependencies = [
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "dirs 1.0.4 (registry+https://github.com/rust-lang/crates.io-index)",

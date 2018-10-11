@@ -7,13 +7,13 @@ mod ubuntu;
 use rs_release::get_os_release;
 use semver::Version;
 
-use error::{ErrorKind, Result};
 use self::amazon::check_amazon;
 use self::debian::check_debian;
 use self::rhel::check_rhel;
 use self::suse::check_suse;
 use self::ubuntu::check_ubuntu;
 use super::arch::Architecture;
+use error::{ErrorKind, Result};
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -43,14 +43,12 @@ impl LinuxType {
 
         let version_id = info.get("VERSION_ID").map(|s| &s[..]);
 
-        Ok(
-            check_ubuntu(id, version_id)
-                .or_else(|| check_amazon(id))
-                .or_else(|| check_rhel(id, version_id))
-                .or_else(|| check_suse(id, version_id))
-                .or_else(|| check_debian(id, version_id))
-                .unwrap_or(LinuxType::Legacy),
-        )
+        Ok(check_ubuntu(id, version_id)
+            .or_else(|| check_amazon(id))
+            .or_else(|| check_rhel(id, version_id))
+            .or_else(|| check_suse(id, version_id))
+            .or_else(|| check_debian(id, version_id))
+            .unwrap_or(LinuxType::Legacy))
     }
 
     fn architecture(&self) -> Architecture {
@@ -91,8 +89,8 @@ impl LinuxType {
 
 #[cfg(test)]
 mod tests {
-    use os::arch::Architecture;
     use super::LinuxType;
+    use os::arch::Architecture;
 
     #[test]
     fn amazon_path() {

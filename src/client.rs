@@ -10,7 +10,9 @@ pub struct HttpClient {
 
 impl HttpClient {
     pub fn new() -> Result<Self> {
-        Ok(Self { client: ClientBuilder::new().gzip(false).build()? })
+        Ok(Self {
+            client: ClientBuilder::new().gzip(false).build()?,
+        })
     }
 
     pub fn get(&self, url: &str) -> Result<Response> {

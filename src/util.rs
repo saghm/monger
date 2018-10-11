@@ -31,7 +31,7 @@ macro_rules! try_option {
     ($opt:expr) => {
         match $opt {
             Some(val) => val,
-            None => return None
+            None => return None,
         }
     };
 }
@@ -43,7 +43,9 @@ pub fn get_from_str<T: FromStr>(s: &str) -> Option<T> {
 
 #[macro_export]
 macro_rules! invariant {
-    ($msg:expr) => { panic!($msg) };
+    ($msg:expr) => {
+        panic!($msg)
+    };
 }
 
 macro_rules! version {
@@ -91,7 +93,7 @@ pub fn select_newer_version(existing: Option<Version>, found: Version) -> Versio
 }
 
 pub fn parse_major_minor_version(version: &str) -> Option<(u64, u64)> {
-    VERSION_WITHOUT_PATCH.captures(version).map(|c| {
-        (c[1].parse().unwrap(), c[2].parse().unwrap())
-    })
+    VERSION_WITHOUT_PATCH
+        .captures(version)
+        .map(|c| (c[1].parse().unwrap(), c[2].parse().unwrap()))
 }

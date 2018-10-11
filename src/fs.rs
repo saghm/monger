@@ -1,8 +1,8 @@
 use std::collections::{BinaryHeap, HashMap};
 use std::env::home_dir;
-use std::fs::{create_dir_all, OpenOptions, read_dir, remove_dir_all, remove_file, rename};
-use std::io::Write;
 use std::ffi::{OsStr, OsString};
+use std::fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, OpenOptions};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use semver::Version;
@@ -104,7 +104,9 @@ impl Fs {
                 Err(_) => continue,
             };
 
-            if v.major == target_major && v.minor == target_minor && v.build.is_empty() &&
+            if v.major == target_major &&
+                v.minor == target_minor &&
+                v.build.is_empty() &&
                 v.pre.is_empty()
             {
                 newest_patch = Some(select_newer_version(newest_patch, v));
@@ -273,8 +275,7 @@ impl Fs {
             self.delete_mongodb_version(&format!("{}", version))?;
             println!(
                 "Deleted {} (because {} is installed)",
-                version,
-                latest_stable
+                version, latest_stable
             );
         }
 
@@ -286,7 +287,10 @@ impl Fs {
         S: AsRef<OsStr>,
     {
         exec_command(
-            self.get_version_bin_dir(version)?.join(binary_name).to_string_lossy().as_ref(),
+            self.get_version_bin_dir(version)?
+                .join(binary_name)
+                .to_string_lossy()
+                .as_ref(),
             args,
         )
     }
@@ -326,8 +330,8 @@ impl FsBuilder {
                 let bin_dir = Path::new(&self.bin_dir.unwrap_or_else(|| DEFAULT_BIN_DIR.into()))
                     .to_path_buf();
 
-                let db_dir = Path::new(&self.db_dir.unwrap_or_else(|| DEFAULT_DB_DIR.into()))
-                    .to_path_buf();
+                let db_dir =
+                    Path::new(&self.db_dir.unwrap_or_else(|| DEFAULT_DB_DIR.into())).to_path_buf();
 
                 Ok(Fs {
                     home_dir,

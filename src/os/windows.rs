@@ -17,8 +17,7 @@ impl WindowsType {
 
     fn name(&self) -> Option<&'static str> {
         match *self {
-            WindowsType::Server2008R2 |
-            WindowsType::Server2008R2Ssl => Some("2008plus"),
+            WindowsType::Server2008R2 | WindowsType::Server2008R2Ssl => Some("2008plus"),
             WindowsType::Server2008 => None,
         }
     }

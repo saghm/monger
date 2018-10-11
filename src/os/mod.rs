@@ -1,7 +1,7 @@
 mod arch;
+mod linux;
 #[allow(dead_code)]
 mod macos;
-mod linux;
 #[allow(dead_code)]
 mod windows;
 
@@ -9,11 +9,11 @@ use std::env::consts;
 
 use semver::Version;
 
-use error::{ErrorKind, Result};
-pub use self::macos::MacOsType;
 pub use self::linux::LinuxType;
+pub use self::macos::MacOsType;
 pub use self::windows::WindowsType;
 use super::url::{Url, UrlBuilder};
+use error::{ErrorKind, Result};
 use util::FileExtension;
 
 #[derive(Debug)]
@@ -42,7 +42,7 @@ impl OperatingSystem {
                 };
 
                 Ok(OperatingSystem::MacOs(macos_type))
-            },
+            }
             "windows" => bail!(ErrorKind::UnsupportedOs("windows".to_string())),
             s => bail!(ErrorKind::UnsupportedOs(s.to_string())),
         }
@@ -52,8 +52,7 @@ impl OperatingSystem {
 impl OperatingSystem {
     fn extension(&self) -> FileExtension {
         match *self {
-            OperatingSystem::Linux(_) |
-            OperatingSystem::MacOs(_) => FileExtension::Tgz,
+            OperatingSystem::Linux(_) | OperatingSystem::MacOs(_) => FileExtension::Tgz,
             OperatingSystem::Windows(_) => FileExtension::Msi,
         }
     }
@@ -91,10 +90,10 @@ mod tests {
     use semver::Version;
 
     use super::arch::Architecture;
-    use super::OperatingSystem;
     use super::linux::LinuxType;
     use super::macos::MacOsType;
     use super::windows::WindowsType;
+    use super::OperatingSystem;
 
     fn matches_url(url: &str, os: OperatingSystem, version: Version) -> String {
         let download_url = os.download_url(&version);
@@ -104,7 +103,6 @@ mod tests {
         dirname
     }
 
-    //
     // Linux URLs
     //
 
@@ -216,7 +214,6 @@ mod tests {
         );
     }
 
-    //
     // MacOS URLs
     //
 
@@ -253,7 +250,6 @@ mod tests {
         assert_eq!(dirname, "mongodb-macOS-x86_64-3.5.4");
     }
 
-    //
     // Windows URLs
     //
 

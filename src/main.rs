@@ -1,4 +1,4 @@
-#![recursion_limit="128"]
+#![recursion_limit = "128"]
 
 #[macro_use]
 extern crate clap;
@@ -9,8 +9,8 @@ extern crate lazy_static;
 extern crate regex;
 extern crate reqwest;
 extern crate rs_release;
-extern crate serde_json;
 extern crate semver;
+extern crate serde_json;
 
 #[macro_use]
 mod util;
@@ -55,18 +55,15 @@ quick_main!(|| -> Result<i32> {
                 )
                 .arg(
                     Arg::with_name("force")
-                        .help(
-                            "download the MongoDB version even if it already is installed",
-                        )
+                        .help("download the MongoDB version even if it already is installed")
                         .short("f")
                         .long("force"),
                 ),
         )
-        .subcommand(SubCommand::with_name("list").about(
-            "lists installed MongoDB versions",
-        ))
+        .subcommand(SubCommand::with_name("list").about("lists installed MongoDB versions"))
         .subcommand(SubCommand::with_name("prune").about(
-            "deletes versions of MongoDB where a newer stable version of the same minor version is installed"
+            "deletes versions of MongoDB where a newer stable version of the same minor version \
+             is installed",
         ))
         .subcommand(
             SubCommand::with_name("run")

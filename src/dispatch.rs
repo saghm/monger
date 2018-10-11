@@ -73,13 +73,13 @@ fn prune(monger: &Monger) -> Result<()> {
 }
 
 fn run(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    let version = matches.value_of("VERSION").unwrap_or_else(|| {
-        invariant!("`monger run` must provide version")
-    });
+    let version = matches
+        .value_of("VERSION")
+        .unwrap_or_else(|| invariant!("`monger run` must provide version"));
 
-    let bin = matches.value_of("BIN").unwrap_or_else(|| {
-        invariant!("`monger run` must provide binary")
-    });
+    let bin = matches
+        .value_of("BIN")
+        .unwrap_or_else(|| invariant!("`monger run` must provide binary"));
 
     let args = matches.values_of("BIN_ARGS").unwrap_or_default();
 
@@ -87,9 +87,9 @@ fn run(monger: &Monger, matches: &ArgMatches) -> Result<()> {
 }
 
 fn start(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    let version = matches.value_of("VERSION").unwrap_or_else(|| {
-        invariant!("`monger run` must provide version")
-    });
+    let version = matches
+        .value_of("VERSION")
+        .unwrap_or_else(|| invariant!("`monger run` must provide version"));
 
     let args = matches.values_of("MONGOD_ARGS").unwrap_or_default();
 

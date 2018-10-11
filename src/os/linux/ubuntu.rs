@@ -1,5 +1,5 @@
-use os::arch::Architecture;
 use super::LinuxType;
+use os::arch::Architecture;
 use util::get_from_str;
 
 pub fn check_ubuntu(id: &str, version_id: Option<&str>) -> Option<LinuxType> {

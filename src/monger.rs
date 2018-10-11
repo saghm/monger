@@ -51,12 +51,8 @@ impl Monger {
         let url: String = url.into();
         let data = self.client.download_file(&url, &version_str)?;
 
-        self.fs.write_mongodb_download(
-            &file,
-            &dir,
-            &data[..],
-            &version_str,
-        )?;
+        self.fs
+            .write_mongodb_download(&file, &dir, &data[..], &version_str)?;
 
         Ok(())
     }
@@ -246,17 +242,13 @@ impl Monger {
             return self.system_exec(binary_name, args);
         }
 
-        match self.fs.exec(
-            binary_name,
-            args.into_iter().collect(),
-            &version,
-        ) {
-            Err(Error(ErrorKind::Io(ref io_err), _)) if io_err.kind() == NotFound => {
-                bail!(ErrorKind::BinaryNotFound(
-                    binary_name.to_string(),
-                    version.to_string(),
-                ))
-            }
+        match self
+            .fs
+            .exec(binary_name, args.into_iter().collect(), &version)
+        {
+            Err(Error(ErrorKind::Io(ref io_err), _)) if io_err.kind() == NotFound => bail!(
+                ErrorKind::BinaryNotFound(binary_name.to_string(), version.to_string(),)
+            ),
             other => other,
         }
     }

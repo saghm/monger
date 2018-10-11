@@ -1,5 +1,5 @@
-use reqwest::Response;
 use reqwest::header::{Link, RelationType};
+use reqwest::Response;
 use serde_json::{self, Value};
 
 use error::Result;

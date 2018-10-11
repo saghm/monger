@@ -1,7 +1,7 @@
 use std::ffi::OsStr;
+use std::os::unix::process::CommandExt;
 use std::path::Path;
 use std::process::Command;
-use std::os::unix::process::CommandExt;
 
 use error::{ErrorKind, Result};
 

@@ -1,4 +1,7 @@
-use reqwest::header::{Link, RelationType};
+use std::str::FromStr;
+
+use hyperx::header::{Link, RelationType};
+use reqwest::header::LINK;
 use reqwest::Response;
 use serde_json::{self, Value};
 
@@ -9,8 +12,13 @@ pub struct Tags {
     value: Value,
 }
 
-fn get_next_page_url_from_response(response: &Response) -> Option<String> {
-    let link_header: &Link = try_option!(response.headers().get());
+fn get_next_page_url_from_response(response: &Response) -> Result<Option<String>> {
+    let header_value = match response.headers().get(LINK) {
+        Some(header) => header,
+        None => return Ok(None),
+    };
+    let raw_string = header_value.to_str()?;
+    let link_header = Link::from_str(raw_string)?;
 
     let value = link_header.values().iter().find(|link_value| {
         let rels = match link_value.rel() {
@@ -21,13 +29,13 @@ fn get_next_page_url_from_response(response: &Response) -> Option<String> {
         rels.iter().any(|rel| *rel == RelationType::Next)
     });
 
-    value.map(|v| v.link().to_string())
+    Ok(value.map(|v| v.link().to_string()))
 }
 
 impl Tags {
     pub fn from_response(response: Response) -> Result<Self> {
         Ok(Tags {
-            next: get_next_page_url_from_response(&response),
+            next: get_next_page_url_from_response(&response)?,
             value: serde_json::from_reader(response)?,
         })
     }

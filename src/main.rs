@@ -4,6 +4,7 @@
 extern crate clap;
 #[macro_use]
 extern crate error_chain;
+extern crate hyperx;
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;

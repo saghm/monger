@@ -1,11 +1,13 @@
 error_chain! {
     foreign_links {
         Clap(::clap::Error);
+        Error(::hyperx::Error);
         Http(::reqwest::Error);
         Io(::std::io::Error);
         Json(::serde_json::Error);
         OsRelease(::rs_release::OsReleaseError);
         SemVer(::semver::SemVerError);
+        ToStr(::reqwest::header::ToStrError);
     }
 
     errors {

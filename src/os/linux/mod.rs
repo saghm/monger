@@ -29,6 +29,7 @@ pub enum LinuxType {
     Ubuntu1204,
     Ubuntu1404,
     Ubuntu1604(Architecture),
+    Ubuntu1804,
 }
 
 impl LinuxType {
@@ -72,6 +73,7 @@ impl LinuxType {
             LinuxType::Ubuntu1204 => Some("ubuntu1204"),
             LinuxType::Ubuntu1404 => Some("ubuntu1404"),
             LinuxType::Ubuntu1604(_) => Some("ubuntu1604"),
+            LinuxType::Ubuntu1804 => Some("ubuntu1804"),
         }
     }
 
@@ -209,6 +211,16 @@ mod tests {
         assert_eq!(
             vec!["x86_64", "ubuntu1604", "3.4.6"],
             LinuxType::Ubuntu1604(Architecture::X86_64).url_path(&version)
+        );
+    }
+
+    #[test]
+    fn ubuntu16804_path() {
+        let version = version!(3, 4, 6);
+
+        assert_eq!(
+            vec!["x86_64", "ubuntu1804", "3.4.6"],
+            LinuxType::Ubuntu1804.url_path(&version)
         );
     }
 }

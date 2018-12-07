@@ -1,11 +1,10 @@
 use std::str::FromStr;
 
 use hyperx::header::{Link, RelationType};
-use reqwest::header::LINK;
-use reqwest::Response;
+use reqwest::{header::LINK, Response};
 use serde_json::{self, Value};
 
-use error::Result;
+use crate::error::Result;
 
 pub struct Tags {
     next: Option<String>,

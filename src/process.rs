@@ -1,9 +1,6 @@
-use std::ffi::OsStr;
-use std::os::unix::process::CommandExt;
-use std::path::Path;
-use std::process::Command;
+use std::{ffi::OsStr, os::unix::process::CommandExt, path::Path, process::Command};
 
-use error::{ErrorKind, Result};
+use crate::error::{ErrorKind, Result};
 
 pub fn run_command<I, S, P>(cmd: &str, args: I, dir: P) -> Result<()>
 where

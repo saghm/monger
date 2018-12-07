@@ -1,9 +1,7 @@
 use clap::ArgMatches;
 use semver::Version;
 
-use error::Result;
-use monger::Monger;
-use util::file_exists_in_path;
+use crate::{error::Result, monger::Monger, util::file_exists_in_path};
 
 pub fn dispatch(args: &ArgMatches) -> Result<()> {
     let monger = Monger::new()?;

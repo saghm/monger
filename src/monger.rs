@@ -1,16 +1,20 @@
-use std::ffi::{OsStr, OsString};
-use std::io::ErrorKind::NotFound;
+use std::{
+    ffi::{OsStr, OsString},
+    io::ErrorKind::NotFound,
+};
 
 use semver::Version;
 use serde_json::Value;
 
-use client::HttpClient;
-use error::{Error, ErrorKind, Result};
-use fs::Fs;
-use os::OperatingSystem;
-use process::exec_command;
-use tags::Tags;
-use util::{parse_major_minor_version, select_newer_version};
+use crate::{
+    client::HttpClient,
+    error::{Error, ErrorKind, Result},
+    fs::Fs,
+    os::OperatingSystem,
+    process::exec_command,
+    tags::Tags,
+    util::{parse_major_minor_version, select_newer_version},
+};
 
 const MONGODB_GIT_TAGS_URL: &str = "https://api.github.com/repos/mongodb/mongo/tags?per_page=100";
 

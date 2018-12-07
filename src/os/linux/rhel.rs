@@ -1,5 +1,5 @@
 use super::LinuxType;
-use util::get_from_str;
+use crate::util::get_from_str;
 
 pub fn check_rhel(id: &str, version_id: Option<&str>) -> Option<LinuxType> {
     if id == "rhel" || id == "centos" {

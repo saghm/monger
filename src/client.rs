@@ -2,7 +2,7 @@ use std::io::Read;
 
 use reqwest::{Client, ClientBuilder, Response};
 
-use error::{ErrorKind, Result};
+use crate::error::{ErrorKind, Result};
 
 pub struct HttpClient {
     client: Client,

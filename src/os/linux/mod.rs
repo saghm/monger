@@ -7,13 +7,12 @@ mod ubuntu;
 use rs_release::get_os_release;
 use semver::Version;
 
-use self::amazon::check_amazon;
-use self::debian::check_debian;
-use self::rhel::check_rhel;
-use self::suse::check_suse;
-use self::ubuntu::check_ubuntu;
+use self::{
+    amazon::check_amazon, debian::check_debian, rhel::check_rhel, suse::check_suse,
+    ubuntu::check_ubuntu,
+};
 use super::arch::Architecture;
-use error::{ErrorKind, Result};
+use crate::error::{ErrorKind, Result};
 
 #[derive(Debug)]
 #[allow(dead_code)]
@@ -92,7 +91,7 @@ impl LinuxType {
 #[cfg(test)]
 mod tests {
     use super::LinuxType;
-    use os::arch::Architecture;
+    use crate::os::arch::Architecture;
 
     #[test]
     fn amazon_path() {

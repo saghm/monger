@@ -9,12 +9,12 @@ use std::env::consts;
 
 use semver::Version;
 
-pub use self::linux::LinuxType;
-pub use self::macos::MacOsType;
-pub use self::windows::WindowsType;
-use super::url::{Url, UrlBuilder};
-use error::{ErrorKind, Result};
-use util::FileExtension;
+pub use self::{arch::Architecture, linux::LinuxType, macos::MacOsType, windows::WindowsType};
+use crate::{
+    error::{ErrorKind, Result},
+    url::{Url, UrlBuilder},
+    util::FileExtension,
+};
 
 #[derive(Debug)]
 pub enum OperatingSystem {

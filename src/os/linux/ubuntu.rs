@@ -1,6 +1,5 @@
 use super::LinuxType;
-use os::arch::Architecture;
-use util::get_from_str;
+use crate::{os::arch::Architecture, util::get_from_str};
 
 pub fn check_ubuntu(id: &str, version_id: Option<&str>) -> Option<LinuxType> {
     if id == "ubuntu" {

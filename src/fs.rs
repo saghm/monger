@@ -1,15 +1,19 @@
-use std::collections::{BinaryHeap, HashMap};
-use std::ffi::{OsStr, OsString};
-use std::fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, OpenOptions};
-use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::{
+    collections::{BinaryHeap, HashMap},
+    ffi::{OsStr, OsString},
+    fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, OpenOptions},
+    io::Write,
+    path::{Path, PathBuf},
+};
 
 use dirs::home_dir;
 use semver::Version;
 
-use error::{ErrorKind, Result};
-use process::{exec_command, run_command};
-use util::{parse_major_minor_version, select_newer_version};
+use crate::{
+    error::{ErrorKind, Result},
+    process::{exec_command, run_command},
+    util::{parse_major_minor_version, select_newer_version},
+};
 
 const DEFAULT_HOME_DIR: &str = ".monger";
 const DEFAULT_BIN_DIR: &str = "mongodb-versions";

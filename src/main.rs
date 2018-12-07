@@ -2,17 +2,10 @@
 
 #[macro_use]
 extern crate clap;
-extern crate dirs;
 #[macro_use]
 extern crate error_chain;
-extern crate hyperx;
 #[macro_use]
 extern crate lazy_static;
-extern crate regex;
-extern crate reqwest;
-extern crate rs_release;
-extern crate semver;
-extern crate serde_json;
 
 #[macro_use]
 mod util;
@@ -29,8 +22,8 @@ mod url;
 
 use clap::{App, AppSettings, Arg, SubCommand};
 
-use dispatch::dispatch;
-use error::Result;
+use crate::dispatch::dispatch;
+use crate::error::Result;
 
 quick_main!(|| -> Result<i32> {
     let matches = App::new(crate_name!())

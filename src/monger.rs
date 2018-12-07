@@ -153,8 +153,8 @@ impl Monger {
                                 // Since there will only be one dev version in development at a
                                 // given time, the newest stable version will never be older than
                                 // one minor version less than the most recent dev version.
-                                if dev_version.major == stable_version.major &&
-                                    dev_version.minor <= stable_version.minor + 1
+                                if dev_version.major == stable_version.major
+                                    && dev_version.minor <= stable_version.minor + 1
                                 {
                                     return Ok(stable_version);
                                 }

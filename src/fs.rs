@@ -108,10 +108,10 @@ impl Fs {
                 Err(_) => continue,
             };
 
-            if v.major == target_major &&
-                v.minor == target_minor &&
-                v.build.is_empty() &&
-                v.pre.is_empty()
+            if v.major == target_major
+                && v.minor == target_minor
+                && v.build.is_empty()
+                && v.pre.is_empty()
             {
                 newest_patch = Some(select_newer_version(newest_patch, v));
             }

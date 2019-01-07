@@ -3,8 +3,9 @@ use std::{
     io::ErrorKind::NotFound,
 };
 
+use regex::Regex;
 use semver::Version;
-use serde_json::Value;
+use soup::{NodeExt, Soup};
 
 use crate::{
     client::HttpClient,
@@ -12,11 +13,15 @@ use crate::{
     fs::Fs,
     os::OperatingSystem,
     process::exec_command,
-    tags::Tags,
     util::{parse_major_minor_version, select_newer_version},
 };
 
-const MONGODB_GIT_TAGS_URL: &str = "https://api.github.com/repos/mongodb/mongo/tags?per_page=100";
+const MONGODB_VERSION_LIST_URL: &str = "https://dl.mongodb.org/dl/src";
+
+lazy_static! {
+    static ref MONGODB_SEMVER_REGEX: Regex =
+        Regex::new(r"src/mongodb-src-r(\d+\.\d+\.\d+)\.tar\.gz$").unwrap();
+}
 
 pub struct Monger {
     client: HttpClient,
@@ -62,115 +67,89 @@ impl Monger {
     }
 
     fn find_latest_matching_version(&self, major: u64, minor: u64) -> Result<Version> {
-        let mut page = Some(MONGODB_GIT_TAGS_URL.to_string());
+        let response = self.client.get(MONGODB_VERSION_LIST_URL)?;
+        let soup = Soup::from_reader(response)?;
 
-        while let Some(current_page) = page {
-            let response = self.client.get(&current_page)?;
-            let tags = Tags::from_response(response)?;
+        let matches = soup
+            .tag("a")
+            .attr("href", &*MONGODB_SEMVER_REGEX)
+            .find_all()
+            .map(|item| {
+                // We know the capture we're looking for will exist (and will be a valid semver
+                // string) due to Soup finding it as a match, so it's safe to unwrap
+                // here.
+                Version::parse(
+                    &*MONGODB_SEMVER_REGEX
+                        .captures(&item.text())
+                        .unwrap()
+                        .get(1)
+                        .unwrap()
+                        .as_str(),
+                )
+                .unwrap()
+            });
 
-            {
-                let array = match *tags.get_value() {
-                    Value::Array(ref values) => values,
-                    _ => bail!(ErrorKind::InvalidJson(MONGODB_GIT_TAGS_URL.to_string())),
-                };
-
-                for value in array {
-                    let name = match value.get("name") {
-                        Some(&Value::String(ref s)) => s,
-                        _ => continue,
-                    };
-
-                    if !name.starts_with('r') {
-                        continue;
-                    }
-
-                    let version = match Version::parse(&name[1..]) {
-                        Ok(v) => v,
-                        Err(_) => continue,
-                    };
-
-                    // Skip release candidates.
-                    if !version.pre.is_empty() || !version.build.is_empty() {
-                        continue;
-                    }
-
-                    if version.major == major && version.minor == minor {
-                        return Ok(version);
-                    }
-                }
+        for version in matches {
+            if major == version.major && minor == version.minor {
+                return Ok(version);
             }
-
-            page = tags.next_page_url();
         }
 
         bail!(ErrorKind::VersionNotFound(format!("{}.{}", major, minor)))
     }
 
     fn find_latest_mongodb_version(&self) -> Result<Version> {
-        let mut page = Some(MONGODB_GIT_TAGS_URL.to_string());
+        let response = self.client.get(MONGODB_VERSION_LIST_URL)?;
+        let soup = Soup::from_reader(response)?;
+
         let mut newest_stable = None;
         let mut newest_dev = None;
 
-        while let Some(current_page) = page {
-            let response = self.client.get(&current_page)?;
-            let tags = Tags::from_response(response)?;
-
-            {
-                let array = match *tags.get_value() {
-                    Value::Array(ref values) => values,
-                    _ => bail!(ErrorKind::InvalidJson(MONGODB_GIT_TAGS_URL.to_string())),
-                };
-
-                for value in array {
-                    let name = match value.get("name") {
-                        Some(&Value::String(ref s)) => s,
-                        _ => continue,
-                    };
-
-                    if !name.starts_with('r') {
-                        continue;
-                    }
-
-                    let version = match Version::parse(&name[1..]) {
-                        Ok(v) => v,
-                        Err(_) => continue,
-                    };
-
-                    // Skip release candidates.
-                    if !version.pre.is_empty() || !version.build.is_empty() {
-                        continue;
-                    }
-
-                    if version.minor % 2 == 0 {
-                        newest_stable = Some(select_newer_version(newest_stable, version));
-                    } else if version.minor % 2 == 1 && newest_dev.is_none() {
-                        newest_dev = Some(version);
-                    }
-
-                    newest_stable = match newest_stable {
-                        Some(stable_version) => {
-                            if let Some(ref dev_version) = newest_dev {
-                                // Since there will only be one dev version in development at a
-                                // given time, the newest stable version will never be older than
-                                // one minor version less than the most recent dev version.
-                                if dev_version.major == stable_version.major
-                                    && dev_version.minor <= stable_version.minor + 1
-                                {
-                                    return Ok(stable_version);
-                                }
-                            }
-
-                            Some(stable_version)
-                        }
-                        None => None,
-                    };
-                }
+        for version in soup
+            .tag("a")
+            .attr("href", &*MONGODB_SEMVER_REGEX)
+            .find_all()
+            .map(|item| {
+                // We know the capture we're looking for will exist (and will be a valid semver
+                // string) due to Soup finding it as a match, so it's safe to unwrap
+                // here.
+                Version::parse(
+                    &*MONGODB_SEMVER_REGEX
+                        .captures(&item.text())
+                        .unwrap()
+                        .get(1)
+                        .unwrap()
+                        .as_str()
+                        .to_string(),
+                )
+                .unwrap()
+            })
+        {
+            if version.minor % 2 == 0 {
+                newest_stable = Some(select_newer_version(newest_stable, version));
+            } else {
+                newest_dev = Some(version);
             }
 
-            page = tags.next_page_url();
+            // Since there will only be one dev version in development at a given time, the newest
+            // stable version will never be older than one minor version less than the most recent
+            // dev version.
+            if let Some(ref stable_version) = newest_stable {
+                if let Some(ref dev_version) = newest_dev {
+                    if dev_version.major == stable_version.major
+                        && dev_version.minor == stable_version.minor + 1
+                    {
+                        return Ok(newest_stable.unwrap());
+                    }
+                }
+            }
         }
 
-        bail!(ErrorKind::InvalidJson(MONGODB_GIT_TAGS_URL.to_string()))
+        if let Some(version) = newest_stable {
+            Ok(version)
+        } else {
+            bail!(ErrorKind::InvalidHtml(MONGODB_VERSION_LIST_URL.to_string()))
+        }
     }
 
     pub fn delete_mongodb_version(&self, version: &str) -> Result<()> {

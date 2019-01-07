@@ -30,9 +30,9 @@ error_chain! {
                         .unwrap_or_else(|| "unknown exit code".to_string()))
         }
 
-        InvalidJson(url: String) {
-            description("JSON did not match expected structure")
-            display("JSON response from {} did not match expected structure", url)
+        InvalidHtml(url: String) {
+            description("HTML did not match expected structure")
+            display("HTML response from {} did not match expected structure", url)
         }
 
         InvalidVersion(version: String) {

@@ -6,6 +6,7 @@ license = "Apache-2.0"
 name = "monger"
 repository = "https://github.com/saghm/monger"
 version = "0.6.0"
+readme = "README.md"
 
 [dependencies]
 clap = "2.32.0"

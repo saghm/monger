@@ -600,7 +600,6 @@ dependencies = [
  "reqwest 0.9.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "rs-release 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "serde_json 1.0.34 (registry+https://github.com/rust-lang/crates.io-index)",
  "soup 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

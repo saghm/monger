@@ -5,7 +5,7 @@ edition = "2018"
 license = "Apache-2.0"
 name = "monger"
 repository = "https://github.com/saghm/monger"
-version = "0.6.0"
+version = "0.6.1"
 readme = "README.md"
 
 [dependencies]

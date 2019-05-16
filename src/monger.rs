@@ -5,7 +5,7 @@ use std::{
 
 use regex::Regex;
 use semver::Version;
-use soup::{NodeExt, Soup};
+use soup::{NodeExt, QueryBuilderExt, Soup};
 
 use crate::{
     client::HttpClient,
@@ -72,7 +72,7 @@ impl Monger {
 
         let matches = soup
             .tag("a")
-            .attr("href", &*MONGODB_SEMVER_REGEX)
+            .attr("href", MONGODB_SEMVER_REGEX.clone())
             .find_all()
             .map(|item| {
                 // We know the capture we're looking for will exist (and will be a valid semver
@@ -107,7 +107,7 @@ impl Monger {
 
         for version in soup
             .tag("a")
-            .attr("href", &*MONGODB_SEMVER_REGEX)
+            .attr("href", MONGODB_SEMVER_REGEX.clone())
             .find_all()
             .map(|item| {
                 // We know the capture we're looking for will exist (and will be a valid semver

@@ -2,7 +2,7 @@ use semver::Version;
 
 use super::arch::Architecture;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum MacOsType {
     NonSsl,
     Ssl,

@@ -5,7 +5,7 @@ mod macos;
 #[allow(dead_code)]
 mod windows;
 
-use std::env::consts;
+use std::{collections::HashMap, env::consts};
 
 use semver::Version;
 
@@ -16,7 +16,42 @@ use crate::{
     util::FileExtension,
 };
 
-#[derive(Debug)]
+lazy_static! {
+    pub static ref OS_MAP: HashMap<&'static str, OperatingSystem> = {
+        let mut map = HashMap::new();
+
+        map.insert("amazon", OperatingSystem::Linux(LinuxType::Amazon));
+        map.insert("debian71", OperatingSystem::Linux(LinuxType::Debian7));
+        map.insert("debian81", OperatingSystem::Linux(LinuxType::Debian8));
+        map.insert("legacy", OperatingSystem::Linux(LinuxType::Legacy));
+        map.insert("osx", OperatingSystem::MacOs(MacOsType::Ssl));
+        map.insert("osx-nossl", OperatingSystem::MacOs(MacOsType::NonSsl));
+        map.insert("rhel62", OperatingSystem::Linux(LinuxType::Rhel6));
+        map.insert("rhel70", OperatingSystem::Linux(LinuxType::Rhel7));
+        map.insert("suse11", OperatingSystem::Linux(LinuxType::Suse11));
+        map.insert("suse12", OperatingSystem::Linux(LinuxType::Suse12));
+        map.insert("ubuntu1204", OperatingSystem::Linux(LinuxType::Ubuntu1204));
+        map.insert("ubuntu1404", OperatingSystem::Linux(LinuxType::Ubuntu1404));
+        map.insert(
+            "ubuntu1604",
+            OperatingSystem::Linux(LinuxType::Ubuntu1604(Architecture::X86_64)),
+        );
+        map.insert(
+            "ubuntu1604-arm",
+            OperatingSystem::Linux(LinuxType::Ubuntu1604(Architecture::Arm)),
+        );
+        map.insert("ubuntu1804", OperatingSystem::Linux(LinuxType::Ubuntu1804));
+        map
+    };
+    pub static ref OS_NAMES: Vec<&'static str> = {
+        let mut names: Vec<_> = OS_MAP.keys().map(|s| *s).collect();
+        names.sort();
+
+        names
+    };
+}
+
+#[derive(Clone, Debug)]
 pub enum OperatingSystem {
     Linux(LinuxType),
 
@@ -63,6 +98,10 @@ impl OperatingSystem {
             OperatingSystem::MacOs(_) => "osx",
             OperatingSystem::Windows(_) => "win32",
         }
+    }
+
+    pub fn from_name(name: &str) -> Option<Self> {
+        OS_MAP.get(name).map(Clone::clone)
     }
 
     pub fn download_url(&self, version: &Version) -> Url {

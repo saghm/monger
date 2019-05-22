@@ -48,13 +48,17 @@ impl Monger {
             })?
         };
 
-        let version_str = format!("{}", version);
-
-        if self.fs.version_exists(&version_str) {
+        if self.fs.version_exists(&version.to_string()) {
             return Ok(());
         }
 
-        let url = OperatingSystem::get(&version)?.download_url(&version);
+        self.download_and_write(OperatingSystem::get(&version)?, version)
+    }
+
+    pub fn download_and_write(&self, os: OperatingSystem, version: Version) -> Result<()> {
+        let version_str = version.to_string();
+
+        let url = os.download_url(&version);
         let file = url.filename();
         let dir = url.dirname();
         let url: String = url.into();

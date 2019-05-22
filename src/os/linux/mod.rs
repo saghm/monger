@@ -14,7 +14,7 @@ use self::{
 use super::arch::Architecture;
 use crate::error::{ErrorKind, Result};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub enum LinuxType {
     Amazon,

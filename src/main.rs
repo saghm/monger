@@ -21,8 +21,7 @@ mod url;
 
 use clap::{App, AppSettings, Arg, SubCommand};
 
-use crate::dispatch::dispatch;
-use crate::error::Result;
+use crate::{dispatch::dispatch, error::Result, os::OS_NAMES};
 
 quick_main!(|| -> Result<i32> {
     let matches = App::new(crate_name!())
@@ -37,6 +36,21 @@ quick_main!(|| -> Result<i32> {
                     Arg::with_name("VERSION")
                         .help("the MongoDB version to delete")
                         .required(true),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("fetch")
+                .about("manually downloads a MongoDB version for a specific OS")
+                .arg(
+                    Arg::with_name("OS")
+                        .possible_values(&OS_NAMES)
+                        .help("The OS version to download.")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("VERSION")
+                        .required(true)
+                        .help("the MongoDB version to download"),
                 ),
         )
         .subcommand(

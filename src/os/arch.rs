@@ -8,8 +8,8 @@ pub enum Architecture {
 }
 
 impl Architecture {
-    pub fn name(&self) -> &'static str {
-        match *self {
+    pub fn name(self) -> &'static str {
+        match self {
             Architecture::Arm => "arm64",
             Architecture::X86_64 => "x86_64",
         }

@@ -27,7 +27,7 @@ pub struct Fs {
 }
 
 impl Fs {
-    pub fn new() -> FsBuilder {
+    pub fn builder() -> FsBuilder {
         Default::default()
     }
 

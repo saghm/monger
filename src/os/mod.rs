@@ -44,7 +44,7 @@ lazy_static! {
         map
     };
     pub static ref OS_NAMES: Vec<&'static str> = {
-        let mut names: Vec<_> = OS_MAP.keys().map(|s| *s).collect();
+        let mut names: Vec<_> = OS_MAP.keys().cloned().collect();
         names.sort();
 
         names

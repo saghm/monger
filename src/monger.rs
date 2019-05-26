@@ -32,7 +32,7 @@ impl Monger {
     pub fn new() -> Result<Self> {
         Ok(Self {
             client: HttpClient::new()?,
-            fs: Fs::new().build()?,
+            fs: Fs::builder().build()?,
         })
     }
 
@@ -207,7 +207,7 @@ impl Monger {
             processed_args.push(self.fs.create_or_get_db_dir(version)?.into_os_string());
         }
 
-        return Ok(processed_args);
+        Ok(processed_args)
     }
 
     pub fn start_mongod<I>(&self, args: I, version: &str) -> Result<()>

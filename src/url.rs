@@ -7,11 +7,11 @@ lazy_static! {
 }
 
 fn name_uses_macos(version: &Version) -> bool {
-    version >= &FIRST_MACOS_VERSION && version < &LAST_MACOS_VERSION
+    *version >= *FIRST_MACOS_VERSION && *version < *LAST_MACOS_VERSION
 }
 
 fn url_uses_macos(version: &Version) -> bool {
-    version >= &NEW_MACOS_VERSION
+    *version >= *NEW_MACOS_VERSION
 }
 
 #[derive(Debug)]
@@ -68,7 +68,7 @@ impl<'a> UrlBuilder<'a> {
         let mut filename = String::new();
         let mut dirname = String::new();
 
-        if url_uses_macos(self.version) && &self.distro[1..=2] == &["osx", "ssl"] {
+        if url_uses_macos(self.version) && self.distro[1..=2] == ["osx", "ssl"] {
             // This is inefficient, but there are only a handful of elements, so we don't care.
             let mut replacement = vec!["mongodb".to_string(), "macos".to_string()];
             replacement.extend(self.distro.split_off(3));

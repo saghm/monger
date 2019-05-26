@@ -41,6 +41,7 @@ impl Monger {
         version_str: &str,
         force: bool,
         os: Option<&str>,
+        id: Option<&str>,
     ) -> Result<()> {
         let version = if version_str == "latest" {
             self.find_latest_mongodb_version()?
@@ -50,9 +51,13 @@ impl Monger {
             crate::util::parse_version(version_str)?
         };
 
-        if self.fs.version_exists(&version.to_string()) {
+        let id = id
+            .map(ToString::to_string)
+            .unwrap_or_else(|| version.to_string());
+
+        if self.fs.version_exists(&id) {
             if force {
-                self.delete_mongodb_version(&version.to_string())?;
+                self.delete_mongodb_version(&id)?;
             } else {
                 return Ok(());
             }
@@ -71,7 +76,7 @@ impl Monger {
         let data = self.client.download_file(&url, &version_str)?;
 
         self.fs
-            .write_mongodb_download(&file, &dir, &data[..], &version.to_string())?;
+            .write_mongodb_download(&file, &dir, &data[..], &id)?;
 
         Ok(())
     }

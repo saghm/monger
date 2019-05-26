@@ -79,14 +79,8 @@ impl Fs {
             return Ok(version.to_string());
         }
 
-        if Version::parse(version).is_ok() {
-            let version_string = version.to_string();
-
-            if self.version_exists(version) {
-                return Ok(version_string);
-            } else {
-                bail!(ErrorKind::InvalidVersion(version_string));
-            }
+        if self.version_exists(version) {
+            return Ok(version.to_string());
         }
 
         let (target_major, target_minor) = match parse_major_minor_version(version) {

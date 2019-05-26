@@ -54,10 +54,20 @@ quick_main!(|| -> Result<i32> {
                 )
                 .arg(
                     Arg::with_name("os")
-                        .help("The OS version to download.")
+                        .help("the OS version to download.")
                         .long("os")
                         .takes_value(true)
                         .possible_values(&OS_NAMES),
+                )
+                .arg(
+                    Arg::with_name("id")
+                        .help(
+                            "specify a unique identifier for the MongoDB version being \
+                             downloaded; if not specified, it will default to the version string \
+                             (i,e, 'x.y.z')",
+                        )
+                        .long("id")
+                        .takes_value(true),
                 ),
         )
         .subcommand(SubCommand::with_name("list").about("lists installed MongoDB versions"))

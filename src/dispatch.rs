@@ -1,5 +1,4 @@
 use clap::ArgMatches;
-use semver::Version;
 
 use crate::{error::Result, monger::Monger, util::file_exists_in_path};
 
@@ -32,19 +31,16 @@ fn get(monger: &Monger, matches: &ArgMatches) -> Result<()> {
 
     let force = matches.is_present("force");
     let os = matches.value_of("os");
-    monger.download_mongodb_version(version_str, force, os)
+    let id = matches.value_of("id");
+    monger.download_mongodb_version(version_str, force, os, id)
 }
 
 fn list(monger: &Monger) -> Result<()> {
     let mut versions: Vec<_> = monger
         .list_versions()?
         .into_iter()
-        .map(|s| {
-            Version::parse(s.to_string_lossy().as_ref())
-                .map(|v| v.to_string())
-                .map_err(From::from)
-        })
-        .collect::<Result<_>>()?;
+        .map(|s| s.to_string_lossy().into_owned())
+        .collect();
     versions.sort();
 
     if file_exists_in_path("mongod") {

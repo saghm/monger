@@ -1,10 +1,9 @@
-use std::fs::metadata;
-use std::os::unix::fs::PermissionsExt;
-use std::path::Path;
-use std::str::FromStr;
+use std::{fs::metadata, os::unix::fs::PermissionsExt, path::Path, str::FromStr};
 
 use regex::Regex;
 use semver::Version;
+
+use crate::error::{Error, ErrorKind, Result};
 
 static EXECUTABLE_BITS: u32 = 0b0_0100_1001;
 
@@ -96,4 +95,11 @@ pub fn parse_major_minor_version(version: &str) -> Option<(u64, u64)> {
     VERSION_WITHOUT_PATCH
         .captures(version)
         .map(|c| (c[1].parse().unwrap(), c[2].parse().unwrap()))
+}
+
+pub fn parse_version(version: &str) -> Result<Version> {
+    Version::parse(version).map_err(|_| {
+        let err: Error = ErrorKind::VersionNotFound(version.to_string()).into();
+        err
+    })
 }

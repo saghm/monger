@@ -36,27 +36,33 @@ impl Monger {
         })
     }
 
-    pub fn download_mongodb_version(&self, version_str: &str) -> Result<()> {
+    pub fn download_mongodb_version(
+        &self,
+        version_str: &str,
+        force: bool,
+        os: Option<&str>,
+    ) -> Result<()> {
         let version = if version_str == "latest" {
             self.find_latest_mongodb_version()?
         } else if let Some((major, minor)) = parse_major_minor_version(version_str) {
             self.find_latest_matching_version(major, minor)?
         } else {
-            Version::parse(version_str).map_err(|_| {
-                let err: Error = ErrorKind::VersionNotFound(version_str.to_string()).into();
-                err
-            })?
+            crate::util::parse_version(version_str)?
         };
 
         if self.fs.version_exists(&version.to_string()) {
-            return Ok(());
+            if force {
+                self.delete_mongodb_version(&version.to_string())?;
+            } else {
+                return Ok(());
+            }
         }
 
-        self.download_and_write(OperatingSystem::get(&version)?, version)
-    }
-
-    pub fn download_and_write(&self, os: OperatingSystem, version: Version) -> Result<()> {
-        let version_str = version.to_string();
+        let os = if let Some(os_name) = os {
+            OperatingSystem::from_name(os_name).unwrap()
+        } else {
+            OperatingSystem::get(&version)?
+        };
 
         let url = os.download_url(&version);
         let file = url.filename();
@@ -65,7 +71,7 @@ impl Monger {
         let data = self.client.download_file(&url, &version_str)?;
 
         self.fs
-            .write_mongodb_download(&file, &dir, &data[..], &version_str)?;
+            .write_mongodb_download(&file, &dir, &data[..], &version.to_string())?;
 
         Ok(())
     }

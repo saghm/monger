@@ -1,7 +1,7 @@
 use clap::ArgMatches;
 use semver::Version;
 
-use crate::{error::Result, monger::Monger, os::OperatingSystem, util::file_exists_in_path};
+use crate::{error::Result, monger::Monger, util::file_exists_in_path};
 
 pub fn dispatch(args: &ArgMatches) -> Result<()> {
     let monger = Monger::new()?;
@@ -13,7 +13,6 @@ pub fn dispatch(args: &ArgMatches) -> Result<()> {
         ("list", _) => list(&monger),
         ("run", Some(m)) => run(&monger, m),
         ("start", Some(m)) => start(&monger, m),
-        ("fetch", Some(m)) => fetch(&monger, m),
         _ => invariant!("subcommand must be provided with requisite args"),
     }
 }
@@ -25,30 +24,15 @@ fn delete(monger: &Monger, matches: &ArgMatches) -> Result<()> {
     }
 }
 
-fn fetch(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    let id = matches
-        .value_of("VERSION")
-        .unwrap_or_else(|| invariant!("`monger fetch` must provide id"));
-
-    let os_name = matches
-        .value_of("OS")
-        .unwrap_or_else(|| invariant!("`monger fetch` must provide os"));
-
-    let os = OperatingSystem::from_name(os_name).unwrap();
-    monger.download_and_write(os, Version::parse(id)?)?;
-
-    Ok(())
-}
-
 fn get(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    if matches.is_present("force") {
-        delete(monger, matches)?;
-    }
-
-    match matches.value_of("VERSION") {
-        Some(version) => monger.download_mongodb_version(version),
+    let version_str = match matches.value_of("VERSION") {
+        Some(version) => version,
         None => invariant!("`monger get` must supply version"),
-    }
+    };
+
+    let force = matches.is_present("force");
+    let os = matches.value_of("os");
+    monger.download_mongodb_version(version_str, force, os)
 }
 
 fn list(monger: &Monger) -> Result<()> {

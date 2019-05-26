@@ -39,21 +39,6 @@ quick_main!(|| -> Result<i32> {
                 ),
         )
         .subcommand(
-            SubCommand::with_name("fetch")
-                .about("manually downloads a MongoDB version for a specific OS")
-                .arg(
-                    Arg::with_name("OS")
-                        .possible_values(&OS_NAMES)
-                        .help("The OS version to download.")
-                        .required(true),
-                )
-                .arg(
-                    Arg::with_name("VERSION")
-                        .required(true)
-                        .help("the MongoDB version to download"),
-                ),
-        )
-        .subcommand(
             SubCommand::with_name("get")
                 .about("downloads a MongoDB version")
                 .arg(
@@ -66,6 +51,13 @@ quick_main!(|| -> Result<i32> {
                         .help("download the MongoDB version even if it already is installed")
                         .short("f")
                         .long("force"),
+                )
+                .arg(
+                    Arg::with_name("os")
+                        .help("The OS version to download.")
+                        .long("os")
+                        .takes_value(true)
+                        .possible_values(&OS_NAMES),
                 ),
         )
         .subcommand(SubCommand::with_name("list").about("lists installed MongoDB versions"))

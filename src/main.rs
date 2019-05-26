@@ -33,8 +33,8 @@ quick_main!(|| -> Result<i32> {
             SubCommand::with_name("delete")
                 .about("deletes an installed MongoDB version")
                 .arg(
-                    Arg::with_name("VERSION")
-                        .help("the MongoDB version to delete")
+                    Arg::with_name("ID")
+                        .help("the ID of the MongoDB version to delete")
                         .required(true),
                 ),
         )
@@ -79,8 +79,8 @@ quick_main!(|| -> Result<i32> {
             SubCommand::with_name("run")
                 .about("run a binary of a downloaded MongoDB version")
                 .arg(
-                    Arg::with_name("VERSION")
-                        .help("the MongoDB version of the binary being run")
+                    Arg::with_name("ID")
+                        .help("the ID of the MongoDB version of the binary being run")
                         .required(true)
                         .index(1),
                 )
@@ -101,8 +101,8 @@ quick_main!(|| -> Result<i32> {
             SubCommand::with_name("start")
                 .about("start an installed mongod")
                 .arg(
-                    Arg::with_name("VERSION")
-                        .help("the mongod version to start")
+                    Arg::with_name("ID")
+                        .help("the ID of the mongod version to start")
                         .required(true),
                 )
                 .arg(

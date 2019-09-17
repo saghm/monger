@@ -1,15 +1,26 @@
+#[macro_use]
+mod util;
+
+mod client;
+pub mod error;
+mod fs;
+pub mod os;
+mod process;
+mod url;
+
 use std::{
     ffi::{OsStr, OsString},
     io::ErrorKind::NotFound,
 };
 
+use lazy_static::lazy_static;
 use regex::Regex;
 use semver::Version;
 use soup::{NodeExt, QueryBuilderExt, Soup};
 
 use crate::{
     client::HttpClient,
-    error::{Error, ErrorKind, Result},
+    error::{Error, Result},
     fs::Fs,
     os::OperatingSystem,
     process::exec_command,
@@ -110,7 +121,9 @@ impl Monger {
             }
         }
 
-        bail!(ErrorKind::VersionNotFound(format!("{}.{}", major, minor)))
+        Err(Error::VersionNotFound {
+            version: format!("{}.{}", major, minor),
+        })
     }
 
     fn find_latest_mongodb_version(&self) -> Result<Version> {
@@ -163,7 +176,9 @@ impl Monger {
         if let Some(version) = newest_stable {
             Ok(version)
         } else {
-            bail!(ErrorKind::InvalidHtml(MONGODB_VERSION_LIST_URL.to_string()))
+            Err(Error::InvalidHtml {
+                url: MONGODB_VERSION_LIST_URL.to_string(),
+            })
         }
     }
 
@@ -242,11 +257,14 @@ impl Monger {
 
         match self
             .fs
-            .exec(binary_name, args.into_iter().collect(), &version)
+            .exec(binary_name, args.into_iter().collect(), version)
         {
-            Err(Error(ErrorKind::Io(ref io_err), _)) if io_err.kind() == NotFound => bail!(
-                ErrorKind::BinaryNotFound(binary_name.to_string(), version.to_string(),)
-            ),
+            Err(Error::Io { ref inner }) if inner.kind() == NotFound => {
+                return Err(Error::BinaryNotFound {
+                    binary: binary_name.into(),
+                    version: version.into(),
+                });
+            }
             other => other,
         }
     }

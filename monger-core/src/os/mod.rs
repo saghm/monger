@@ -7,11 +7,12 @@ mod windows;
 
 use std::{collections::HashMap, env::consts};
 
+use lazy_static::lazy_static;
 use semver::Version;
 
 pub use self::{arch::Architecture, linux::LinuxType, macos::MacOsType, windows::WindowsType};
 use crate::{
-    error::{ErrorKind, Result},
+    error::{Error, Result},
     url::{Url, UrlBuilder},
     util::FileExtension,
 };
@@ -78,8 +79,12 @@ impl OperatingSystem {
 
                 Ok(OperatingSystem::MacOs(macos_type))
             }
-            "windows" => bail!(ErrorKind::UnsupportedOs("windows".to_string())),
-            s => bail!(ErrorKind::UnsupportedOs(s.to_string())),
+            "windows" => Err(Error::UnsupportedOs {
+                os_name: "windows".to_string(),
+            }),
+            s => Err(Error::UnsupportedOs {
+                os_name: s.to_string(),
+            }),
         }
     }
 }

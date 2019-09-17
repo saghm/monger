@@ -1,6 +1,7 @@
 use clap::ArgMatches;
+use monger_core::{error::Result, Monger};
 
-use crate::{error::Result, monger::Monger, util::file_exists_in_path};
+use crate::util::file_exists_in_path;
 
 pub fn dispatch(args: &ArgMatches) -> Result<()> {
     let monger = Monger::new()?;

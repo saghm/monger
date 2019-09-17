@@ -10,7 +10,7 @@ use dirs::home_dir;
 use semver::Version;
 
 use crate::{
-    error::{ErrorKind, Result},
+    error::{Error, Result},
     process::{exec_command, run_command},
     util::{parse_major_minor_version, select_newer_version},
 };
@@ -85,7 +85,11 @@ impl Fs {
 
         let (target_major, target_minor) = match parse_major_minor_version(version) {
             Some(pair) => pair,
-            None => bail!(ErrorKind::InvalidVersion(version.to_string())),
+            None => {
+                return Err(Error::InvalidVersion {
+                    version: version.to_string(),
+                })
+            }
         };
 
         let mut newest_patch = None;
@@ -113,7 +117,11 @@ impl Fs {
 
         let matching_version = match newest_patch {
             Some(version) => format!("{}", version),
-            None => bail!(ErrorKind::InvalidVersion(version.to_string())),
+            None => {
+                return Err(Error::InvalidVersion {
+                    version: version.to_string(),
+                })
+            }
         };
 
         Ok(matching_version)
@@ -337,7 +345,7 @@ impl FsBuilder {
                     db_dir,
                 })
             }
-            None => bail!(ErrorKind::UnknownHomeDirectory),
+            None => Err(Error::UnknownHomeDirectory),
         }
     }
 }

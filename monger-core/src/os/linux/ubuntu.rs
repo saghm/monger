@@ -10,7 +10,7 @@ pub fn check_ubuntu(id: &str, version_id: Option<&str>) -> Option<LinuxType> {
 }
 
 fn check_ubuntu_version(version_id: Option<&str>) -> Option<LinuxType> {
-    let mut version_numbers = try_option!(version_id).split('.');
+    let mut version_numbers = version_id?.split('.');
 
     match version_numbers.next().and_then(get_from_str::<u8>) {
         Some(i) if i >= 18 => Some(LinuxType::Ubuntu1804),

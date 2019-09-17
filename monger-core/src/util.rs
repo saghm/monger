@@ -1,11 +1,10 @@
-use std::{fs::metadata, os::unix::fs::PermissionsExt, path::Path, str::FromStr};
+use std::str::FromStr;
 
+use lazy_static::lazy_static;
 use regex::Regex;
 use semver::Version;
 
-use crate::error::{Error, ErrorKind, Result};
-
-static EXECUTABLE_BITS: u32 = 0b0_0100_1001;
+use crate::error::{Error, Result};
 
 lazy_static! {
     static ref VERSION_WITHOUT_PATCH: Regex = Regex::new(r"^(\d+)\.(\d+)$").unwrap();
@@ -25,28 +24,12 @@ impl FileExtension {
     }
 }
 
-#[macro_export]
-macro_rules! try_option {
-    ($opt:expr) => {
-        match $opt {
-            Some(val) => val,
-            None => return None,
-        }
-    };
-}
-
 #[inline]
 pub fn get_from_str<T: FromStr>(s: &str) -> Option<T> {
     FromStr::from_str(s).ok()
 }
 
 #[macro_export]
-macro_rules! invariant {
-    ($msg:expr) => {
-        panic!($msg)
-    };
-}
-
 macro_rules! version {
     ($major:expr, $minor:expr, $patch:expr) => {{
         ::semver::Version {
@@ -57,28 +40,6 @@ macro_rules! version {
             build: Vec::new(),
         }
     }};
-}
-
-#[inline]
-fn is_executable(mode: u32) -> bool {
-    mode & EXECUTABLE_BITS == EXECUTABLE_BITS
-}
-
-pub fn file_exists_in_path<P: AsRef<Path>>(file: P) -> bool {
-    env!("PATH").split(':').any(|dir| {
-        let path = Path::new(dir).join(file.as_ref());
-
-        let data = match metadata(path) {
-            Ok(m) => m,
-            Err(_) => return false,
-        };
-
-        if !data.is_file() {
-            return false;
-        }
-
-        is_executable(data.permissions().mode())
-    })
 }
 
 pub fn select_newer_version(existing: Option<Version>, found: Version) -> Version {
@@ -99,7 +60,9 @@ pub fn parse_major_minor_version(version: &str) -> Option<(u64, u64)> {
 
 pub fn parse_version(version: &str) -> Result<Version> {
     Version::parse(version).map_err(|_| {
-        let err: Error = ErrorKind::VersionNotFound(version.to_string()).into();
-        err
+        Error::VersionNotFound {
+            version: version.into(),
+        }
+        .into()
     })
 }

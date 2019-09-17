@@ -1,0 +1,13 @@
+[package]
+authors = ["Saghm Rossi <saghmrossi@gmail.com>"]
+description = "MongoDB version manager"
+edition = "2018"
+license = "Apache-2.0"
+name = "monger"
+repository = "https://github.com/saghm/monger"
+version = "0.7.0"
+readme = "README.md"
+
+[dependencies]
+clap = "2.33.0"
+monger-core = { path = "../monger-core" }

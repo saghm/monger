@@ -1,6 +1,6 @@
 use std::{ffi::OsStr, os::unix::process::CommandExt, path::Path, process::Command};
 
-use crate::error::{ErrorKind, Result};
+use crate::error::{Error, Result};
 
 pub fn run_command<I, S, P>(cmd: &str, args: I, dir: P) -> Result<()>
 where
@@ -14,10 +14,12 @@ where
         .spawn()?
         .wait()?;
 
-    ensure!(
-        status.success(),
-        ErrorKind::FailedSubprocess(cmd.to_string(), status.code())
-    );
+    if !status.success() {
+        return Err(Error::FailedSubprocess {
+            command: cmd.to_string(),
+            exit_code: status.code(),
+        });
+    }
 
     Ok(())
 }

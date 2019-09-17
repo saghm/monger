@@ -2,28 +2,17 @@
 
 #[macro_use]
 extern crate clap;
-#[macro_use]
-extern crate error_chain;
-#[macro_use]
-extern crate lazy_static;
 
 #[macro_use]
 mod util;
-
-mod client;
 mod dispatch;
-mod error;
-mod fs;
-mod monger;
-mod os;
-mod process;
-mod url;
 
 use clap::{App, AppSettings, Arg, SubCommand};
+use monger_core::{error::Result, os::OS_NAMES};
 
-use crate::{dispatch::dispatch, error::Result, os::OS_NAMES};
+use crate::dispatch::dispatch;
 
-quick_main!(|| -> Result<i32> {
+fn main() -> Result<()> {
     let matches = App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!("\n"))
@@ -115,5 +104,5 @@ quick_main!(|| -> Result<i32> {
         .get_matches();
 
     dispatch(&matches)?;
-    Ok(0)
-});
+    Ok(())
+}

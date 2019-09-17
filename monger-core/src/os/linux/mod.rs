@@ -12,7 +12,7 @@ use self::{
     ubuntu::check_ubuntu,
 };
 use super::arch::Architecture;
-use crate::error::{ErrorKind, Result};
+use crate::error::{Error, Result};
 
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
@@ -38,7 +38,7 @@ impl LinuxType {
 
         let id = match id_entry {
             Some(id) => id,
-            None => bail!(ErrorKind::UnknownOs),
+            None => return Err(Error::UnknownOs),
         };
 
         let version_id = info.get("VERSION_ID").map(|s| &s[..]);

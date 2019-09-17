@@ -10,7 +10,7 @@ pub fn check_rhel(id: &str, version_id: Option<&str>) -> Option<LinuxType> {
 }
 
 fn check_rhel_version(version_id: Option<&str>) -> Option<LinuxType> {
-    let mut version_numbers = try_option!(version_id).split('.');
+    let mut version_numbers = version_id?.split('.');
 
     match version_numbers.next().and_then(get_from_str::<u8>) {
         Some(i) if i >= 7 => Some(LinuxType::Rhel7),

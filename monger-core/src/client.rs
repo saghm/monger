@@ -2,7 +2,7 @@ use std::io::Read;
 
 use reqwest::{Client, ClientBuilder, Response};
 
-use crate::error::{ErrorKind, Result};
+use crate::error::{Error, Result};
 
 pub struct HttpClient {
     client: Client,
@@ -26,7 +26,9 @@ impl HttpClient {
         let mut response = self.client.get(url).send()?;
 
         if !response.status().is_success() {
-            bail!(ErrorKind::InvalidVersion(version.to_string()))
+            return Err(Error::InvalidVersion {
+                version: version.into(),
+            });
         }
 
         response.read_to_end(&mut data)?;

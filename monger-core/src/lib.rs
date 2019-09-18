@@ -34,6 +34,7 @@ lazy_static! {
         Regex::new(r"src/mongodb-src-r(\d+\.\d+\.\d+)\.tar\.gz$").unwrap();
 }
 
+#[derive(Debug)]
 pub struct Monger {
     client: HttpClient,
     fs: Fs,

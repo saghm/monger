@@ -4,6 +4,7 @@ use reqwest::{Client, ClientBuilder, Response};
 
 use crate::error::{Error, Result};
 
+#[derive(Debug)]
 pub struct HttpClient {
     client: Client,
 }

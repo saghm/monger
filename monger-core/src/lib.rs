@@ -5,7 +5,7 @@ mod client;
 pub mod error;
 mod fs;
 pub mod os;
-mod process;
+pub mod process;
 mod url;
 
 use std::{
@@ -23,7 +23,7 @@ use crate::{
     error::{Error, Result},
     fs::Fs,
     os::OperatingSystem,
-    process::exec_command,
+    process::{run_command, ChildType},
     util::{parse_major_minor_version, select_newer_version},
 };
 
@@ -226,39 +226,50 @@ impl Monger {
         Ok(processed_args)
     }
 
-    pub fn start_mongod<I>(&self, args: I, version: &str) -> Result<()>
+    pub fn start_mongod<I>(&self, args: I, version: &str, child: ChildType) -> Result<()>
     where
-        I: Iterator<Item = OsString>,
+        I: IntoIterator<Item = OsString>,
     {
-        let processed_args = self.process_args(args, version)?;
+        let processed_args = self.process_args(args.into_iter(), version)?;
 
         if version == "system" {
-            self.system_exec("mongod", processed_args)
+            self.system_command("mongod", processed_args, child)
         } else {
-            self.exec("mongod", processed_args, &version)
+            self.command("mongod", processed_args, &version, child)
         }
     }
 
-    fn system_exec<I, S>(&self, binary_name: &str, args: I) -> Result<()>
+    fn system_command<I, S>(&self, binary_name: &str, args: I, child: ChildType) -> Result<()>
     where
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
-        exec_command(binary_name, args.into_iter().collect())
+        run_command(
+            binary_name,
+            args.into_iter(),
+            std::env::current_dir()?,
+            child,
+        )
     }
 
-    pub fn exec<I, S>(&self, binary_name: &str, args: I, version: &str) -> Result<()>
+    pub fn command<I, S>(
+        &self,
+        binary_name: &str,
+        args: I,
+        version: &str,
+        child: ChildType,
+    ) -> Result<()>
     where
         I: IntoIterator<Item = S>,
         S: AsRef<OsStr>,
     {
         if version == "system" {
-            return self.system_exec(binary_name, args);
+            return self.system_command(binary_name, args, child);
         }
 
         match self
             .fs
-            .exec(binary_name, args.into_iter().collect(), version)
+            .command(binary_name, args.into_iter().collect(), version, child)
         {
             Err(Error::Io { ref inner }) if inner.kind() == NotFound => {
                 return Err(Error::BinaryNotFound {

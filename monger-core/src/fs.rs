@@ -11,7 +11,7 @@ use semver::Version;
 
 use crate::{
     error::{Error, Result},
-    process::{exec_command, run_command},
+    process::{run_command, ChildType},
     util::{parse_major_minor_version, select_newer_version},
 };
 
@@ -144,6 +144,7 @@ impl Fs {
             "tar",
             vec!["xf".as_ref(), filename.as_ref().as_os_str()],
             self.get_bin_dir(),
+            ChildType::Wait,
         )?;
 
         let old_name = self.get_bin_file_abs(dirname);
@@ -288,16 +289,23 @@ impl Fs {
         Ok(())
     }
 
-    pub fn exec<S>(&self, binary_name: &str, args: Vec<S>, version: &str) -> Result<()>
+    pub fn command<S>(
+        &self,
+        binary_name: &str,
+        args: Vec<S>,
+        version: &str,
+        child: ChildType,
+    ) -> Result<()>
     where
         S: AsRef<OsStr>,
     {
-        exec_command(
-            self.get_version_bin_dir(version)?
-                .join(binary_name)
-                .to_string_lossy()
-                .as_ref(),
-            args,
+        let binary_path = self.get_version_bin_dir(version)?.join(binary_name);
+
+        run_command(
+            binary_path.to_string_lossy().as_ref(),
+            args.into_iter(),
+            std::env::current_dir()?,
+            child,
         )
     }
 }

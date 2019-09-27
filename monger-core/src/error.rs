@@ -5,7 +5,8 @@ pub type Result<T> = std::result::Result<T, Error>;
 #[derive(Debug, Error)]
 pub enum Error {
     #[error(
-        display = "Unable to find binary to execute. Run `monger get {}` and try again if you're sure the version and binary name are correct",
+        display = "Unable to find binary to execute. Run `monger get {}` and try again if you're \
+                   sure the version and binary name are correct",
         version
     )]
     BinaryNotFound { binary: String, version: String },
@@ -17,7 +18,10 @@ pub enum Error {
     },
 
     #[error(display = "An HTTP error occurred: {}", inner)]
-    Http { inner: reqwest::Error },
+    Http {
+        #[error(cause)]
+        inner: reqwest::Error,
+    },
 
     #[error(
         display = "HTML response from {} did not match expected structure",
@@ -29,16 +33,28 @@ pub enum Error {
     InvalidVersion { version: String },
 
     #[error(display = "An I/O error occurred: {}", inner)]
-    Io { inner: std::io::Error },
+    Io {
+        #[error(cause)]
+        inner: std::io::Error,
+    },
 
     #[error(display = "Unable to determine the OS release version")]
-    OsRelease { inner: rs_release::OsReleaseError },
+    OsRelease {
+        #[error(cause)]
+        inner: rs_release::OsReleaseError,
+    },
 
     #[error(display = "Unable to parse semantic version")]
-    SemVer { inner: semver::SemVerError },
+    SemVer {
+        #[error(cause)]
+        inner: semver::SemVerError,
+    },
 
     #[error(display = "Unable to convert HTTP header to string: {}", inner)]
-    ToStr { inner: reqwest::header::ToStrError },
+    ToStr {
+        #[error(cause)]
+        inner: reqwest::header::ToStrError,
+    },
 
     #[error(display = "Unable to find home directory")]
     UnknownHomeDirectory,
@@ -53,32 +69,18 @@ pub enum Error {
     VersionNotFound { version: String },
 }
 
-impl From<reqwest::Error> for Error {
-    fn from(err: reqwest::Error) -> Self {
-        Self::Http { inner: err }
-    }
+macro_rules! define_error_from {
+    ($ext:ty, $var:ident) => {
+        impl From<$ext> for Error {
+            fn from(err: $ext) -> Self {
+                Error::$var { inner: err }
+            }
+        }
+    };
 }
 
-impl From<std::io::Error> for Error {
-    fn from(err: std::io::Error) -> Self {
-        Self::Io { inner: err }
-    }
-}
-
-impl From<rs_release::OsReleaseError> for Error {
-    fn from(err: rs_release::OsReleaseError) -> Self {
-        Self::OsRelease { inner: err }
-    }
-}
-
-impl From<semver::SemVerError> for Error {
-    fn from(err: semver::SemVerError) -> Self {
-        Self::SemVer { inner: err }
-    }
-}
-
-impl From<reqwest::header::ToStrError> for Error {
-    fn from(err: reqwest::header::ToStrError) -> Self {
-        Self::ToStr { inner: err }
-    }
-}
+define_error_from!(reqwest::Error, Http);
+define_error_from!(std::io::Error, Io);
+define_error_from!(rs_release::OsReleaseError, OsRelease);
+define_error_from!(semver::SemVerError, SemVer);
+define_error_from!(reqwest::header::ToStrError, ToStr);

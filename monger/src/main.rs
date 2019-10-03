@@ -13,11 +13,21 @@ use monger_core::{error::Result, os::OS_NAMES};
 use crate::dispatch::dispatch;
 
 fn main() -> Result<()> {
+    #[allow(deprecated)]
     let matches = App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!("\n"))
         .about(crate_description!())
         .setting(AppSettings::ArgRequiredElseHelp)
+        .subcommand(
+            SubCommand::with_name("clear")
+                .about("clear the database files for an installed MongoDB version")
+                .arg(
+                    Arg::with_name("ID")
+                        .help("the ID of the MongoDB version whose files should be cleared")
+                        .required(true),
+                ),
+        )
         .subcommand(
             SubCommand::with_name("delete")
                 .about("deletes an installed MongoDB version")

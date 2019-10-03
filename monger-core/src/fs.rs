@@ -74,6 +74,13 @@ impl Fs {
         self.get_version_dir(version).is_dir()
     }
 
+    pub fn clear_db_dir(&self, version: &str) -> Result<bool> {
+        let db_dir = self.get_db_file_rel(version);
+        let found = self.delete_directory(db_dir)?;
+
+        Ok(found)
+    }
+
     fn get_newest_matching_version(&self, version: &str) -> Result<String> {
         if version == "system" {
             return Ok(version.to_string());

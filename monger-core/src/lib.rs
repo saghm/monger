@@ -48,6 +48,10 @@ impl Monger {
         })
     }
 
+    pub fn clear_database_files(&self, version_str: &str) -> Result<bool> {
+        self.fs.clear_db_dir(version_str)
+    }
+
     pub fn download_mongodb_version(
         &self,
         version_str: &str,

@@ -7,6 +7,7 @@ pub fn dispatch(args: &ArgMatches) -> Result<()> {
     let monger = Monger::new()?;
 
     match args.subcommand() {
+        ("clear", Some(m)) => clear(&monger, m),
         ("delete", Some(m)) => delete(&monger, m),
         ("get", Some(m)) => get(&monger, m),
         ("prune", _) => prune(&monger),
@@ -14,6 +15,19 @@ pub fn dispatch(args: &ArgMatches) -> Result<()> {
         ("run", Some(m)) => run(&monger, m),
         ("start", Some(m)) => start(&monger, m),
         _ => invariant!("subcommand must be provided with requisite args"),
+    }
+}
+
+fn clear(monger: &Monger, matches: &ArgMatches) -> Result<()> {
+    match matches.value_of("ID") {
+        Some(version) => {
+            if monger.clear_database_files(version)? {
+                println!("Cleared database files of {}", version);
+            }
+
+            Ok(())
+        }
+        None => invariant!("`monger clear` must supply ID"),
     }
 }
 

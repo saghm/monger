@@ -683,15 +683,15 @@ dependencies = [
 
 [[package]]
 name = "monger"
-version = "0.7.0"
+version = "0.9.0"
 dependencies = [
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "monger-core 0.1.0",
+ "monger-core 0.9.0",
 ]
 
 [[package]]
 name = "monger-core"
-version = "0.1.0"
+version = "0.9.0"
 dependencies = [
  "dirs 2.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "err-derive 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",

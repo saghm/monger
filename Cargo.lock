@@ -673,12 +673,28 @@ name = "monger"
 version = "0.9.0"
 dependencies = [
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "monger-core 0.9.0",
+ "monger-core 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "monger-core"
 version = "0.9.0"
+dependencies = [
+ "dirs 2.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "err-derive 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "hyperx 0.15.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 1.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "reqwest 0.9.20 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rs-release 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "semver 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "soup 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "monger-core"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "dirs 2.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "err-derive 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1823,6 +1839,7 @@ dependencies = [
 "checksum miniz_oxide 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7108aff85b876d06f22503dcce091e29f76733b2bfdd91eebce81f5e68203a10"
 "checksum mio 0.6.19 (registry+https://github.com/rust-lang/crates.io-index)" = "83f51996a3ed004ef184e16818edc51fadffe8e7ca68be67f9dee67d84d0ff23"
 "checksum miow 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)" = "8c1f2f3b1cf331de6896aabf6e9d55dca90356cc9960cca7eaaf408a355ae919"
+"checksum monger-core 0.9.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d52926ec0d2ea7818f8753d6bbb5c6b95238b9c2670bb6aae6fcd550deb3507e"
 "checksum net2 0.2.33 (registry+https://github.com/rust-lang/crates.io-index)" = "42550d9fb7b6684a6d404d9fa7250c2eb2646df731d1c06afc06dcee9e1bcf88"
 "checksum new_debug_unreachable 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "f40f005c60db6e03bae699e414c58bf9aa7ea02a2d0b9bfbcf19286cc4c82b30"
 "checksum nodrop 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)" = "2f9667ddcc6cc8a43afc9b7917599d7216aa09c463919ea32c59ed6cac8bc945"

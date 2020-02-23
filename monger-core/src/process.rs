@@ -1,58 +1,24 @@
 use std::{
-    ffi::OsStr,
+    ffi::{OsStr, OsString},
     os::unix::process::CommandExt,
     path::Path,
-    process::{Command, Stdio},
+    process::{Child, Command, Stdio},
 };
 
 use crate::error::{Error, Result};
 
-#[derive(Debug, PartialEq, Eq, Clone, Copy)]
-pub enum ChildType {
-    Exec,
-    Fork,
-    Wait,
-}
-
-impl Default for ChildType {
-    fn default() -> Self {
-        Self::Wait
-    }
-}
-
-fn exec_command<I, S, P>(cmd: &str, args: I, dir: P) -> Result<()>
-where
-    I: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
-    P: AsRef<Path>,
-{
-    return Err(Error::Io {
+pub(crate) fn exec_command(cmd: &str, args: Vec<OsString>, dir: impl AsRef<Path>) -> Error {
+    Error::Io {
         inner: Command::new(cmd).current_dir(dir).args(args).exec(),
-    });
+    }
 }
 
-pub(crate) fn run_command<I, S, P>(cmd: &str, args: I, dir: P, child_type: ChildType) -> Result<()>
-where
-    I: IntoIterator<Item = S>,
-    S: AsRef<OsStr>,
-    P: AsRef<Path>,
-{
-    if let ChildType::Exec = child_type {
-        return exec_command(cmd, args, dir);
-    }
-
-    let mut child = Command::new(cmd)
-        .current_dir(dir)
-        .args(args)
-        .stdin(Stdio::null())
-        .stdout(Stdio::null())
-        .spawn()?;
-
-    if let ChildType::Fork = child_type {
-        return Ok(());
-    }
-
-    let status = child.wait()?;
+pub(crate) fn run_foreground_command(
+    cmd: &str,
+    args: Vec<impl AsRef<OsStr>>,
+    dir: impl AsRef<Path>,
+) -> Result<()> {
+    let status = run_background_command(cmd, args, dir)?.wait()?;
 
     if !status.success() {
         return Err(Error::FailedSubprocess {
@@ -62,4 +28,19 @@ where
     }
 
     Ok(())
+}
+
+pub(crate) fn run_background_command(
+    cmd: &str,
+    args: Vec<impl AsRef<OsStr>>,
+    dir: impl AsRef<Path>,
+) -> Result<Child> {
+    let child = Command::new(cmd)
+        .current_dir(dir)
+        .args(args)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .spawn()?;
+
+    Ok(child)
 }

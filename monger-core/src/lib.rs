@@ -8,10 +8,7 @@ pub mod os;
 pub mod process;
 mod url;
 
-use std::{
-    ffi::{OsStr, OsString},
-    io::ErrorKind::NotFound,
-};
+use std::{ffi::OsString, io::ErrorKind::NotFound, process::Child};
 
 use lazy_static::lazy_static;
 use regex::Regex;
@@ -23,7 +20,7 @@ use crate::{
     error::{Error, Result},
     fs::Fs,
     os::OperatingSystem,
-    process::{run_command, ChildType},
+    process::{exec_command, run_background_command},
     util::{parse_major_minor_version, select_newer_version},
 };
 
@@ -203,10 +200,9 @@ impl Monger {
         self.fs.prune()
     }
 
-    fn process_args<I>(&self, mut args: I, version: &str) -> Result<Vec<OsString>>
-    where
-        I: Iterator<Item = OsString>,
-    {
+    fn process_args(&self, args: Vec<OsString>, version: &str) -> Result<Vec<OsString>> {
+        let mut args = args.into_iter();
+
         let mut processed_args = Vec::new();
         let mut found_dbpath = false;
 
@@ -230,57 +226,59 @@ impl Monger {
         Ok(processed_args)
     }
 
-    pub fn start_mongod<I>(&self, args: I, version: &str, child: ChildType) -> Result<()>
-    where
-        I: IntoIterator<Item = OsString>,
-    {
-        let processed_args = self.process_args(args.into_iter(), version)?;
+    pub fn start_mongod(&self, args: Vec<OsString>, version: &str, exec: bool) -> Result<Child> {
+        let processed_args = self.process_args(args, version)?;
 
-        if version == "system" {
-            self.system_command("mongod", processed_args, child)
+        if exec {
+            Err(self.exec_command("mongod", processed_args, version))
         } else {
-            self.command("mongod", processed_args, &version, child)
+            self.run_background_command("mongod", processed_args, version)
         }
     }
 
-    fn system_command<I, S>(&self, binary_name: &str, args: I, child: ChildType) -> Result<()>
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
-    {
-        run_command(
-            binary_name,
-            args.into_iter(),
-            std::env::current_dir()?,
-            child,
-        )
-    }
-
-    pub fn command<I, S>(
+    pub fn run_background_command(
         &self,
         binary_name: &str,
-        args: I,
+        args: Vec<OsString>,
         version: &str,
-        child: ChildType,
-    ) -> Result<()>
-    where
-        I: IntoIterator<Item = S>,
-        S: AsRef<OsStr>,
-    {
+    ) -> Result<Child> {
         if version == "system" {
-            return self.system_command(binary_name, args, child);
+            return run_background_command(binary_name, args, std::env::current_dir()?);
         }
 
-        match self
-            .fs
-            .command(binary_name, args.into_iter().collect(), version, child)
-        {
+        let result =
+            self.fs
+                .run_background_command(binary_name, args.into_iter().collect(), version);
+
+        match result {
             Err(Error::Io { ref inner }) if inner.kind() == NotFound => {
-                return Err(Error::BinaryNotFound {
+                Err(Error::BinaryNotFound {
                     binary: binary_name.into(),
                     version: version.into(),
-                });
+                })
             }
+            other => other,
+        }
+    }
+
+    pub fn exec_command(&self, binary_name: &str, args: Vec<OsString>, version: &str) -> Error {
+        let dir = match std::env::current_dir() {
+            Ok(dir) => dir,
+            Err(e) => return e.into(),
+        };
+
+        let error = if version == "system" {
+            exec_command(binary_name, args, dir)
+        } else {
+            self.fs
+                .exec_command(binary_name, args.into_iter().collect(), version)
+        };
+
+        match error {
+            Error::Io { ref inner } if inner.kind() == NotFound => Error::BinaryNotFound {
+                binary: binary_name.into(),
+                version: version.into(),
+            },
             other => other,
         }
     }

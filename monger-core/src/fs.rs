@@ -1,9 +1,10 @@
 use std::{
     collections::{BinaryHeap, HashMap},
-    ffi::{OsStr, OsString},
+    ffi::OsString,
     fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, OpenOptions},
     io::Write,
     path::{Path, PathBuf},
+    process::Child,
 };
 
 use dirs::home_dir;
@@ -11,7 +12,7 @@ use semver::Version;
 
 use crate::{
     error::{Error, Result},
-    process::{run_command, ChildType},
+    process::{exec_command, run_background_command, run_foreground_command},
     util::{parse_major_minor_version, select_newer_version},
 };
 
@@ -147,11 +148,10 @@ impl Fs {
         dirname: P,
         version: P,
     ) -> Result<()> {
-        run_command(
+        run_foreground_command(
             "tar",
             vec!["xf".as_ref(), filename.as_ref().as_os_str()],
             self.get_bin_dir(),
-            ChildType::Wait,
         )?;
 
         let old_name = self.get_bin_file_abs(dirname);
@@ -296,23 +296,32 @@ impl Fs {
         Ok(())
     }
 
-    pub fn command<S>(
+    pub fn exec_command(&self, binary_name: &str, args: Vec<OsString>, version: &str) -> Error {
+        let binary_path = match self.get_version_bin_dir(version) {
+            Ok(dir) => dir.join(binary_name),
+            Err(e) => return e.into(),
+        };
+
+        let dir = match std::env::current_dir() {
+            Ok(dir) => dir,
+            Err(e) => return e.into(),
+        };
+
+        exec_command(binary_path.to_string_lossy().as_ref(), args, dir)
+    }
+
+    pub fn run_background_command(
         &self,
         binary_name: &str,
-        args: Vec<S>,
+        args: Vec<OsString>,
         version: &str,
-        child: ChildType,
-    ) -> Result<()>
-    where
-        S: AsRef<OsStr>,
-    {
+    ) -> Result<Child> {
         let binary_path = self.get_version_bin_dir(version)?.join(binary_name);
 
-        run_command(
+        run_background_command(
             binary_path.to_string_lossy().as_ref(),
-            args.into_iter(),
+            args,
             std::env::current_dir()?,
-            child,
         )
     }
 }

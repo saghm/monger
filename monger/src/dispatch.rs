@@ -1,5 +1,5 @@
 use clap::ArgMatches;
-use monger_core::{error::Result, process::ChildType, Monger};
+use monger_core::{error::Result, Monger};
 
 use crate::util::file_exists_in_path;
 
@@ -92,7 +92,7 @@ fn run(monger: &Monger, matches: &ArgMatches) -> Result<()> {
 
     let args = matches.values_of("BIN_ARGS").unwrap_or_default();
 
-    monger.command(bin, args, version, ChildType::Exec)
+    Err(monger.exec_command(bin, args.map(Into::into).collect(), version))
 }
 
 fn start(monger: &Monger, matches: &ArgMatches) -> Result<()> {
@@ -102,5 +102,7 @@ fn start(monger: &Monger, matches: &ArgMatches) -> Result<()> {
 
     let args = matches.values_of("MONGOD_ARGS").unwrap_or_default();
 
-    monger.start_mongod(args.map(Into::into), version, ChildType::Exec)
+    monger
+        .start_mongod(args.map(Into::into).collect(), version, true)
+        .map(|_| ())
 }

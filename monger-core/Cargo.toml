@@ -5,7 +5,7 @@ edition = "2018"
 license = "Apache-2.0"
 name = "monger-core"
 repository = "https://github.com/saghm/monger"
-version = "0.10.0"
+version = "0.11.0"
 
 [dependencies]
 lazy_static = "1.4.0"

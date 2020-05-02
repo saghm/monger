@@ -1,6 +1,6 @@
 use std::io::Read;
 
-use reqwest::{Client, ClientBuilder, Response};
+use reqwest::blocking::{Client, ClientBuilder, Response};
 
 use crate::error::{Error, Result};
 

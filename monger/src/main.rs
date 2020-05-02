@@ -38,6 +38,24 @@ fn main() -> Result<()> {
                 ),
         )
         .subcommand(
+            SubCommand::with_name("download")
+                .about("downloads a MongoDB version from a given URL")
+                .arg(
+                    Arg::with_name("URL")
+                        .help("the URL to download from")
+                        .required(true),
+                )
+                .arg(
+                    Arg::with_name("id")
+                        .help(
+                            "specify a unique identifier for the MongoDB version being downloaded",
+                        )
+                        .required(true)
+                        .long("id")
+                        .takes_value(true),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("get")
                 .about("downloads a MongoDB version")
                 .arg(

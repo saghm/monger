@@ -49,6 +49,30 @@ impl Monger {
         self.fs.clear_db_dir(version_str)
     }
 
+    pub fn download_mongodb_version_from_url(
+        &self,
+        url: &str,
+        id: &str,
+        force: bool,
+    ) -> Result<()> {
+        if self.fs.version_exists(id) {
+            if force {
+                self.delete_mongodb_version(id)?;
+            } else {
+                return Err(Error::ExistingId { id: id.into() });
+            }
+        }
+
+        let dir = format!("custom-download-{}", id);
+        let file = format!("{}.tgz", dir);
+        let data = self.client.download_url(&url)?;
+
+        self.fs
+            .write_mongodb_download(&file, &dir, &data[..], &id)?;
+
+        Ok(())
+    }
+
     pub fn download_mongodb_version(
         &self,
         version_str: &str,
@@ -86,7 +110,7 @@ impl Monger {
         let file = url.filename();
         let dir = url.dirname();
         let url: String = url.into();
-        let data = self.client.download_file(&url, &version_str)?;
+        let data = self.client.download_version(&url, &version_str)?;
 
         self.fs
             .write_mongodb_download(&file, &dir, &data[..], &id)?;

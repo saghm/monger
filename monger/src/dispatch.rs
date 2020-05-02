@@ -9,6 +9,7 @@ pub fn dispatch(args: &ArgMatches) -> Result<()> {
     match args.subcommand() {
         ("clear", Some(m)) => clear(&monger, m),
         ("delete", Some(m)) => delete(&monger, m),
+        ("download", Some(m)) => download(&monger, m),
         ("get", Some(m)) => get(&monger, m),
         ("prune", _) => prune(&monger),
         ("list", _) => list(&monger),
@@ -36,6 +37,22 @@ fn delete(monger: &Monger, matches: &ArgMatches) -> Result<()> {
         Some(version) => monger.delete_mongodb_version(version),
         None => invariant!("`monger delete` must supply ID"),
     }
+}
+
+fn download(monger: &Monger, matches: &ArgMatches) -> Result<()> {
+    let url = match matches.value_of("URL") {
+        Some(url) => url,
+        None => invariant!("`monger download` must supply url"),
+    };
+
+    let id = match matches.value_of("id") {
+        Some(id) => id,
+        None => invariant!("`monger download` must supply id"),
+    };
+
+    let force = matches.is_present("force");
+
+    monger.download_mongodb_version_from_url(url, id, force)
 }
 
 fn get(monger: &Monger, matches: &ArgMatches) -> Result<()> {

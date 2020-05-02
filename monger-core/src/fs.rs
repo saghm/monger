@@ -148,9 +148,19 @@ impl Fs {
         dirname: P,
         version: P,
     ) -> Result<()> {
+        let temp_dir = self.get_bin_dir().join(dirname.as_ref());
+        std::fs::create_dir_all(&temp_dir)?;
+
         run_foreground_command(
             "tar",
-            vec!["xf".as_ref(), filename.as_ref().as_os_str()],
+            vec![
+                "xf".as_ref(),
+                filename.as_ref().as_os_str(),
+                "-C".as_ref(),
+                dirname.as_ref().as_os_str(),
+                "--strip-components".as_ref(),
+                "1".as_ref(),
+            ],
             self.get_bin_dir(),
         )?;
 
@@ -158,6 +168,9 @@ impl Fs {
         let new_name = self.get_bin_file_abs(version);
 
         rename(old_name, new_name)?;
+
+        let tarball_file = self.get_bin_dir().join(filename);
+        std::fs::remove_file(tarball_file)?;
 
         Ok(())
     }

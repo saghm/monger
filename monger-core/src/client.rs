@@ -21,7 +21,21 @@ impl HttpClient {
         Ok(response)
     }
 
-    pub fn download_file(&self, url: &str, version: &str) -> Result<Vec<u8>> {
+    pub fn download_url(&self, url: &str) -> Result<Vec<u8>> {
+        println!("downloading {}...", url);
+        let mut data = Vec::new();
+        let mut response = self.client.get(url).send()?;
+
+        if !response.status().is_success() {
+            return Err(Error::InvalidUrl { url: url.into() });
+        }
+
+        response.read_to_end(&mut data)?;
+
+        Ok(data)
+    }
+
+    pub fn download_version(&self, url: &str, version: &str) -> Result<Vec<u8>> {
         println!("downloading {}...", url);
         let mut data = Vec::new();
         let mut response = self.client.get(url).send()?;
@@ -46,7 +60,7 @@ mod tests {
     fn download_test() {
         let client = HttpClient::new().unwrap();
         let data = client
-            .download_file("https://httpbin.org/robots.txt", "null")
+            .download_version("https://httpbin.org/robots.txt", "null")
             .unwrap();
         let expected = "User-agent: *\nDisallow: /deny\n".to_string();
 

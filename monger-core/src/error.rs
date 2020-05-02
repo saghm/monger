@@ -10,6 +10,12 @@ pub enum Error {
     )]
     BinaryNotFound { binary: String, version: String },
 
+    #[error(
+        "A mongodb version with the id '{id}' already exists. Either pass --force to overwrite it \
+         or pass a different id."
+    )]
+    ExistingId { id: String },
+
     #[error("`{command}` command failed")]
     FailedSubprocess {
         command: String,
@@ -24,6 +30,9 @@ pub enum Error {
 
     #[error("HTML response from {url} did not match expected structure")]
     InvalidHtml { url: String },
+
+    #[error("HTTP error occurred when trying to access url '{url}'")]
+    InvalidUrl { url: String },
 
     #[error("MongoDB version {version} does not exist")]
     InvalidVersion { version: String },

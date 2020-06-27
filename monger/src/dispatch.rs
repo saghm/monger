@@ -2,7 +2,7 @@ use anyhow::Result;
 use monger_core::Monger;
 use self_update::backends::github::Update;
 
-use crate::{util::file_exists_in_path, Options};
+use crate::{util::file_exists_in_path, Defaults, Options};
 
 impl Options {
     pub(super) fn dispatch(self) -> Result<()> {
@@ -15,6 +15,25 @@ impl Options {
                 }
             }
             Self::Delete { id } => monger.delete_mongodb_version(&id)?,
+            Self::Defaults(Defaults::Clear) => {
+                if monger.clear_default_args()? {
+                    println!("Cleared default args");
+                }
+            }
+            Self::Defaults(Defaults::Get) => match monger.get_default_args()? {
+                Some(args) => println!("default arguments:\n    {}", args),
+                None => println!("no default arguments exist"),
+            },
+            Self::Defaults(Defaults::Set { args }) => {
+                let args = args.join(" ");
+                let trimmed_args = args.trim();
+
+                if !trimmed_args.is_empty() {
+                    monger.set_default_args(trimmed_args)?;
+
+                    println!("default arguments set to:\n    {}", trimmed_args);
+                }
+            }
             Self::Download { url, id, force } => {
                 monger.download_mongodb_version_from_url(&url, &id, force)?;
             }

@@ -49,6 +49,10 @@ impl Monger {
         self.fs.clear_db_dir(version_str)
     }
 
+    pub fn clear_default_args(&self) -> Result<bool> {
+        self.fs.clear_default_args()
+    }
+
     pub fn download_mongodb_version_from_url(
         &self,
         url: &str,
@@ -216,6 +220,10 @@ impl Monger {
         Ok(())
     }
 
+    pub fn get_default_args(&self) -> Result<Option<String>> {
+        self.fs.get_default_args()
+    }
+
     pub fn list_versions(&self) -> Result<Vec<OsString>> {
         self.fs.list_versions()
     }
@@ -250,8 +258,16 @@ impl Monger {
         Ok(processed_args)
     }
 
+    pub fn set_default_args(&self, default_args: &str) -> Result<()> {
+        self.fs.set_default_args(default_args)
+    }
+
     pub fn start_mongod(&self, args: Vec<OsString>, version: &str, exec: bool) -> Result<Child> {
-        let processed_args = self.process_args(args, version)?;
+        let mut processed_args = self.process_args(args, version)?;
+
+        if let Some(default_args) = self.fs.get_default_args()? {
+            processed_args.extend(default_args.split_whitespace().map(Into::into));
+        }
 
         if exec {
             Err(self.exec_command("mongod", processed_args, version))

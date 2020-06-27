@@ -1,8 +1,8 @@
 use std::{
     collections::{BinaryHeap, HashMap},
     ffi::OsString,
-    fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, OpenOptions},
-    io::Write,
+    fs::{create_dir_all, read_dir, remove_dir_all, remove_file, rename, File, OpenOptions},
+    io::{Read, Write},
     path::{Path, PathBuf},
     process::Child,
 };
@@ -142,6 +142,38 @@ impl Fs {
         Ok(())
     }
 
+    fn get_default_args_file(&self) -> PathBuf {
+        self.home_dir.join("default-args")
+    }
+
+    pub(crate) fn clear_default_args(&self) -> Result<bool> {
+        let default_args_file = self.get_default_args_file();
+
+        if !default_args_file.exists() {
+            return Ok(false);
+        }
+
+        remove_file(default_args_file)?;
+        Ok(true)
+    }
+
+    pub(crate) fn get_default_args(&self) -> Result<Option<String>> {
+        let default_args_file = self.get_default_args_file();
+
+        if !default_args_file.is_file() {
+            return Ok(None);
+        }
+
+        let mut default_args = String::new();
+        File::open(default_args_file)?.read_to_string(&mut default_args)?;
+
+        Ok(Some(default_args))
+    }
+
+    pub(crate) fn set_default_args(&self, default_args: &str) -> Result<()> {
+        self.write_file("default-args", default_args.as_bytes())
+    }
+
     fn decompress_download<P: AsRef<Path>>(
         &self,
         filename: P,
@@ -203,7 +235,11 @@ impl Fs {
         self.create()?;
 
         let filepath = self.home_dir.join(filename);
-        let mut file = OpenOptions::new().write(true).create(true).open(filepath)?;
+        let mut file = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .truncate(true)
+            .open(filepath)?;
         file.write_all(bytes)?;
 
         Ok(())

@@ -26,6 +26,9 @@ enum Options {
         id: String,
     },
 
+    /// manages the default arguments used when starting a mongod
+    Defaults(Defaults),
+
     /// downloads a MongoDB version from a given URL
     Download {
         /// the URL to download from
@@ -95,6 +98,21 @@ enum Options {
         /// extra arguments for the mongod being run
         #[structopt(name = "MONGODB_ARGS", last(true))]
         mongod_args: Vec<String>,
+    },
+}
+
+#[derive(Debug, StructOpt)]
+enum Defaults {
+    /// clears the previously set default arguments
+    Clear,
+
+    /// prints the default arguments used when starting a mongod
+    Get,
+
+    /// sets the default arguments used when starting a mongod
+    Set {
+        #[structopt(name = "ARGS", last(true))]
+        args: Vec<String>,
     },
 }
 

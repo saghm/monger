@@ -1,4 +1,6 @@
-use monger_core::{error::Result, Monger};
+use anyhow::Result;
+use monger_core::Monger;
+use self_update::backends::github::Update;
 
 use crate::{util::file_exists_in_path, Options};
 
@@ -25,11 +27,25 @@ impl Options {
             Self::List => list(&monger)?,
             Self::Prune => monger.prune()?,
             Self::Run { id, bin, bin_args } => {
-                return Err(monger.exec_command(
-                    &bin,
-                    bin_args.into_iter().map(Into::into).collect(),
-                    &id,
-                ));
+                return Err(monger
+                    .exec_command(&bin, bin_args.into_iter().map(Into::into).collect(), &id)
+                    .into());
+            }
+            Self::SelfUpdate => {
+                let status = Update::configure()
+                    .repo_owner("saghm")
+                    .repo_name("monger")
+                    .current_version(env!("CARGO_PKG_VERSION"))
+                    .bin_name(env!("CARGO_PKG_NAME"))
+                    .show_download_progress(true)
+                    .build()?
+                    .update()?;
+
+                if status.uptodate() {
+                    println!("Already have the latest version");
+                } else {
+                    println!("Downloaded and installed {}", status.version());
+                }
             }
             Self::Start { id, mongod_args } => {
                 monger.start_mongod(

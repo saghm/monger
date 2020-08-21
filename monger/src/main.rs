@@ -5,7 +5,8 @@
 mod util;
 mod dispatch;
 
-use monger_core::{error::Result, os::OS_NAMES};
+use anyhow::Result;
+use monger_core::os::OS_NAMES;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -81,6 +82,9 @@ enum Options {
         #[structopt(name = "BIN_ARGS", last(true))]
         bin_args: Vec<String>,
     },
+
+    /// updates monger to the latest version
+    SelfUpdate,
 
     /// start an installed mongod
     Start {

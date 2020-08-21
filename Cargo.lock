@@ -758,7 +758,7 @@ dependencies = [
 
 [[package]]
 name = "monger"
-version = "0.11.0"
+version = "0.12.0"
 dependencies = [
  "anyhow 1.0.32 (registry+https://github.com/rust-lang/crates.io-index)",
  "monger-core 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",

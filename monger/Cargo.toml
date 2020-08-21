@@ -5,12 +5,12 @@ edition = "2018"
 license = "Apache-2.0"
 name = "monger"
 repository = "https://github.com/saghm/monger"
-version = "0.13.0"
+version = "0.12.0"
 readme = "../README.md"
 
 [dependencies]
 anyhow = "1.0.32"
-monger-core = "0.13.0" 
+monger-core = { path = "../monger-core" }
 structopt = "0.3.16"
 
 [dependencies.self_update]

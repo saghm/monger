@@ -1,70 +1,47 @@
-use clap::ArgMatches;
 use monger_core::{error::Result, Monger};
 
-use crate::util::file_exists_in_path;
+use crate::{util::file_exists_in_path, Options};
 
-pub fn dispatch(args: &ArgMatches) -> Result<()> {
-    let monger = Monger::new()?;
+impl Options {
+    pub(super) fn dispatch(self) -> Result<()> {
+        let monger = Monger::new()?;
 
-    match args.subcommand() {
-        ("clear", Some(m)) => clear(&monger, m),
-        ("delete", Some(m)) => delete(&monger, m),
-        ("download", Some(m)) => download(&monger, m),
-        ("get", Some(m)) => get(&monger, m),
-        ("prune", _) => prune(&monger),
-        ("list", _) => list(&monger),
-        ("run", Some(m)) => run(&monger, m),
-        ("start", Some(m)) => start(&monger, m),
-        _ => invariant!("subcommand must be provided with requisite args"),
-    }
-}
-
-fn clear(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    match matches.value_of("ID") {
-        Some(version) => {
-            if monger.clear_database_files(version)? {
-                println!("Cleared database files of {}", version);
+        match self {
+            Self::Clear { id } => {
+                if monger.clear_database_files(&id)? {
+                    println!("Cleared database files of {}", id);
+                }
             }
-
-            Ok(())
+            Self::Delete { id } => monger.delete_mongodb_version(&id)?,
+            Self::Download { url, id, force } => {
+                monger.download_mongodb_version_from_url(&url, &id, force)?;
+            }
+            Self::Get {
+                version,
+                force,
+                os,
+                id,
+            } => monger.download_mongodb_version(&version, force, os.as_deref(), id.as_deref())?,
+            Self::List => list(&monger)?,
+            Self::Prune => monger.prune()?,
+            Self::Run { id, bin, bin_args } => {
+                return Err(monger.exec_command(
+                    &bin,
+                    bin_args.into_iter().map(Into::into).collect(),
+                    &id,
+                ));
+            }
+            Self::Start { id, mongod_args } => {
+                monger.start_mongod(
+                    mongod_args.into_iter().map(Into::into).collect(),
+                    &id,
+                    true,
+                )?;
+            }
         }
-        None => invariant!("`monger clear` must supply ID"),
+
+        Ok(())
     }
-}
-
-fn delete(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    match matches.value_of("ID") {
-        Some(version) => monger.delete_mongodb_version(version),
-        None => invariant!("`monger delete` must supply ID"),
-    }
-}
-
-fn download(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    let url = match matches.value_of("URL") {
-        Some(url) => url,
-        None => invariant!("`monger download` must supply url"),
-    };
-
-    let id = match matches.value_of("id") {
-        Some(id) => id,
-        None => invariant!("`monger download` must supply id"),
-    };
-
-    let force = matches.is_present("force");
-
-    monger.download_mongodb_version_from_url(url, id, force)
-}
-
-fn get(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    let version_str = match matches.value_of("VERSION") {
-        Some(version) => version,
-        None => invariant!("`monger get` must supply version"),
-    };
-
-    let force = matches.is_present("force");
-    let os = matches.value_of("os");
-    let id = matches.value_of("id");
-    monger.download_mongodb_version(version_str, force, os, id)
 }
 
 fn list(monger: &Monger) -> Result<()> {
@@ -90,36 +67,5 @@ fn list(monger: &Monger) -> Result<()> {
             println!("    {}", version);
         }
     }
-
     Ok(())
-}
-
-fn prune(monger: &Monger) -> Result<()> {
-    monger.prune()
-}
-
-fn run(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    let version = matches
-        .value_of("ID")
-        .unwrap_or_else(|| invariant!("`monger run` must provide ID"));
-
-    let bin = matches
-        .value_of("BIN")
-        .unwrap_or_else(|| invariant!("`monger run` must provide binary"));
-
-    let args = matches.values_of("BIN_ARGS").unwrap_or_default();
-
-    Err(monger.exec_command(bin, args.map(Into::into).collect(), version))
-}
-
-fn start(monger: &Monger, matches: &ArgMatches) -> Result<()> {
-    let version = matches
-        .value_of("ID")
-        .unwrap_or_else(|| invariant!("`monger run` must provide ID"));
-
-    let args = matches.values_of("MONGOD_ARGS").unwrap_or_default();
-
-    monger
-        .start_mongod(args.map(Into::into).collect(), version, true)
-        .map(|_| ())
 }

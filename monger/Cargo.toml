@@ -9,11 +9,11 @@ version = "0.13.0"
 readme = "../README.md"
 
 [dependencies]
-anyhow = "1.0.32"
+anyhow = "1.0.33"
 monger-core = "0.13.0"
-structopt = "0.3.16"
+structopt = "0.3.20"
 
 [dependencies.self_update]
-version = "0.19.0"
+version = "0.20.0"
 default-features = false
 features = ["archive-tar", "compression-flate2", "rustls"]

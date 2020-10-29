@@ -37,6 +37,21 @@ pub struct Monger {
     fs: Fs,
 }
 
+#[derive(Debug)]
+pub struct LogFile {
+    pub cluster_id: String,
+    pub port: u16,
+    pub node_type: LogFileType,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum LogFileType {
+    DataNode,
+    ShardingRouter,
+    ShardNode { shard_num: usize },
+    ConfigServer,
+}
+
 impl Monger {
     pub fn new() -> Result<Self> {
         Ok(Self {
@@ -47,6 +62,10 @@ impl Monger {
 
     pub fn clear_database_files(&self, version_str: &str) -> Result<bool> {
         self.fs.clear_db_dir(version_str)
+    }
+
+    pub fn clear_cluster_logs(&self, cluster_id: &str) -> Result<bool> {
+        self.fs.clear_cluster_logs(cluster_id)
     }
 
     pub fn clear_default_args(&self) -> Result<bool> {
@@ -262,17 +281,63 @@ impl Monger {
         self.fs.set_default_args(default_args)
     }
 
-    pub fn start_mongod(&self, args: Vec<OsString>, version: &str, exec: bool) -> Result<Child> {
+    pub fn start_mongod(
+        &self,
+        args: Vec<OsString>,
+        version: &str,
+        exec: bool,
+        save_log: Option<LogFile>,
+    ) -> Result<Child> {
         let mut processed_args = self.process_args(args, version)?;
 
         if let Some(default_args) = self.fs.get_default_args()? {
             processed_args.extend(default_args.split_whitespace().map(Into::into));
         }
 
+        if let Some(log_file) = save_log {
+            processed_args.push("--logpath".into());
+            processed_args.push(
+                self.fs
+                    .get_and_create_log_file_path(
+                        &log_file.cluster_id,
+                        log_file.port,
+                        log_file.node_type,
+                    )?
+                    .into(),
+            );
+        }
+
         if exec {
             Err(self.exec_command("mongod", processed_args, version))
         } else {
             self.run_background_command("mongod", processed_args, version)
+        }
+    }
+
+    pub fn start_mongos(
+        &self,
+        mut args: Vec<OsString>,
+        version: &str,
+        exec: bool,
+        save_log: Option<LogFile>,
+    ) -> Result<Child> {
+        if let Some(log_file) = save_log {
+            args.push("--logpath".into());
+            args.push(
+                self.fs
+                    .get_and_create_log_file_path(
+                        &log_file.cluster_id,
+                        log_file.port,
+                        log_file.node_type,
+                    )?
+                    .into(),
+            );
+        }
+
+        if exec {
+            Err(self.exec_command("mongos", args, version))
+        } else {
+            self.run_background_command("mongos", args, version)
         }
     }
 

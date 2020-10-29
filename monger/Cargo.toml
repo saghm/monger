@@ -10,8 +10,10 @@ readme = "../README.md"
 
 [dependencies]
 anyhow = "1.0.33"
-monger-core = "0.13.1"
+#monger-core = "0.13.1"
+monger-core = { path = "../monger-core" }
 structopt = "0.3.20"
+rand = "0.7.3"
 
 [dependencies.self_update]
 version = "0.20.0"

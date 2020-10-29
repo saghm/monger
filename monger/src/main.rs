@@ -95,6 +95,10 @@ enum Options {
         #[structopt(name = "ID")]
         id: String,
 
+        /// whether to save the log in the monger directory (note: implies `--fork`)
+        #[structopt(long)]
+        save_log: bool,
+
         /// extra arguments for the mongod being run
         #[structopt(name = "MONGODB_ARGS", last(true))]
         mongod_args: Vec<String>,

@@ -14,17 +14,20 @@ use crate::{
     error::{Error, Result},
     process::{exec_command, run_background_command, run_foreground_command},
     util::{parse_major_minor_version, select_newer_version},
+    LogFileType,
 };
 
 const DEFAULT_HOME_DIR: &str = ".monger";
 const DEFAULT_BIN_DIR: &str = "mongodb-versions";
 const DEFAULT_DB_DIR: &str = "db";
+const DEFAULT_LOG_DIR: &str = "logs";
 
 #[derive(Debug)]
 pub struct Fs {
     home_dir: PathBuf,
     bin_dir: PathBuf,
     db_dir: PathBuf,
+    log_dir: PathBuf,
 }
 
 impl Fs {
@@ -58,6 +61,16 @@ impl Fs {
     }
 
     #[inline]
+    fn get_log_file_rel<P: AsRef<Path>>(&self, filename: P) -> PathBuf {
+        self.log_dir.join(filename)
+    }
+
+    #[inline]
+    fn get_log_file_abs<P: AsRef<Path>>(&self, filename: P) -> PathBuf {
+        self.get_file(self.get_log_file_rel(filename))
+    }
+
+    #[inline]
     fn get_version_dir(&self, version: &str) -> PathBuf {
         self.get_bin_file_abs(version)
     }
@@ -78,6 +91,13 @@ impl Fs {
     pub fn clear_db_dir(&self, version: &str) -> Result<bool> {
         let db_dir = self.get_db_file_rel(version);
         let found = self.delete_directory(db_dir)?;
+
+        Ok(found)
+    }
+
+    pub fn clear_cluster_logs(&self, cluster_id: &str) -> Result<bool> {
+        let log_dir = self.get_log_file_rel(cluster_id);
+        let found = self.delete_directory(log_dir)?;
 
         Ok(found)
     }
@@ -345,6 +365,32 @@ impl Fs {
         Ok(())
     }
 
+    pub fn get_and_create_log_file_path(
+        &self,
+        cluster_id: &str,
+        port: u16,
+        node: LogFileType,
+    ) -> Result<PathBuf> {
+        let mut containing_dir = self.get_log_file_abs(cluster_id);
+
+        match node {
+            LogFileType::DataNode => {}
+            LogFileType::ShardingRouter => {
+                containing_dir.push("mongos");
+            }
+            LogFileType::ShardNode { shard_num } => {
+                containing_dir.push(&format!("shard-{}", shard_num));
+            }
+            LogFileType::ConfigServer => {
+                containing_dir.push("config-server");
+            }
+        };
+
+        create_dir_all(&containing_dir)?;
+
+        Ok(containing_dir.join(port.to_string()))
+    }
+
     pub fn exec_command(&self, binary_name: &str, args: Vec<OsString>, version: &str) -> Error {
         let binary_path = match self.get_version_bin_dir(version) {
             Ok(dir) => dir.join(binary_name),
@@ -380,6 +426,7 @@ pub struct FsBuilder {
     home_dir: Option<String>,
     bin_dir: Option<String>,
     db_dir: Option<String>,
+    log_dir: Option<String>,
 }
 
 impl FsBuilder {
@@ -401,6 +448,12 @@ impl FsBuilder {
         self
     }
 
+    #[allow(dead_code)]
+    pub fn with_log_dir(&mut self, db_dir: &str) -> &mut Self {
+        self.log_dir = Some(db_dir.into());
+        self
+    }
+
     pub fn build(self) -> Result<Fs> {
         match home_dir() {
             Some(mut home_dir) => {
@@ -412,10 +465,14 @@ impl FsBuilder {
                 let db_dir =
                     Path::new(&self.db_dir.unwrap_or_else(|| DEFAULT_DB_DIR.into())).to_path_buf();
 
+                let log_dir = Path::new(&self.log_dir.unwrap_or_else(|| DEFAULT_LOG_DIR.into()))
+                    .to_path_buf();
+
                 Ok(Fs {
                     home_dir,
                     bin_dir,
                     db_dir,
+                    log_dir,
                 })
             }
             None => Err(Error::UnknownHomeDirectory),

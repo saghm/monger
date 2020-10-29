@@ -1,5 +1,6 @@
 use anyhow::Result;
-use monger_core::Monger;
+use monger_core::{LogFile, LogFileType, Monger};
+use rand::seq::IteratorRandom;
 use self_update::backends::github::Update;
 
 use crate::{util::file_exists_in_path, Defaults, Options};
@@ -66,12 +67,41 @@ impl Options {
                     println!("Downloaded and installed {}", status.version());
                 }
             }
-            Self::Start { id, mongod_args } => {
-                monger.start_mongod(
-                    mongod_args.into_iter().map(Into::into).collect(),
-                    &id,
-                    true,
-                )?;
+            Self::Start {
+                id,
+                save_log,
+                mongod_args,
+            } => {
+                let port = mongod_args
+                    .iter()
+                    .position(|arg| arg == "--port")
+                    .and_then(|i| mongod_args.get(i + 1))
+                    .and_then(|s| s.parse().ok())
+                    .unwrap_or(27017);
+
+                let mut mongod_args: Vec<_> = mongod_args.into_iter().map(Into::into).collect();
+
+                let save_log = if save_log {
+                    mongod_args.push("--fork".into());
+
+                    let cluster_id: String = (0..8)
+                        .map(|_| alpha_numeric().choose(&mut rand::thread_rng()).unwrap())
+                        .collect();
+
+                    monger.clear_cluster_logs(&cluster_id)?;
+
+                    println!("NOTE: log file saved under cluster id '{}'\n", cluster_id);
+
+                    Some(LogFile {
+                        cluster_id,
+                        port,
+                        node_type: LogFileType::DataNode,
+                    })
+                } else {
+                    None
+                };
+
+                monger.start_mongod(mongod_args, &id, true, save_log)?;
             }
         }
 
@@ -103,4 +133,8 @@ fn list(monger: &Monger) -> Result<()> {
         }
     }
     Ok(())
+}
+
+fn alpha_numeric() -> impl Iterator<Item = char> {
+    ('0'..'9').chain('A'..'Z').chain('a'..'z')
 }

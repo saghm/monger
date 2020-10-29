@@ -770,10 +770,10 @@ dependencies = [
 
 [[package]]
 name = "monger"
-version = "0.13.1"
+version = "0.14.0"
 dependencies = [
  "anyhow",
- "monger-core",
+ "monger-core 0.14.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.7.3",
  "self_update",
  "structopt",
@@ -782,6 +782,23 @@ dependencies = [
 [[package]]
 name = "monger-core"
 version = "0.14.0"
+dependencies = [
+ "dirs",
+ "hyperx",
+ "lazy_static",
+ "regex",
+ "reqwest",
+ "rs-release",
+ "semver 0.11.0",
+ "soup",
+ "thiserror",
+]
+
+[[package]]
+name = "monger-core"
+version = "0.14.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3c0be1dc920448c79190a9fcf5db8d0c7771af52b9e3f0362af603cfc2957ee"
 dependencies = [
  "dirs",
  "hyperx",
